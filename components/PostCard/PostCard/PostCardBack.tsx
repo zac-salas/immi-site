@@ -1,18 +1,5 @@
 'use client'
 
-/**
- * PostCardBack.tsx — web port of the RN PostCardBack
- *
- * Back face of a postcard: shown after the 3D flip.
- * Matches the RN layout exactly:
- *   - Dotted border overlay
- *   - Header: X close, title, sender, stamp
- *   - Divider
- *   - Scrollable body text
- *   - Footer: image thumbnail(s) + Reply button
- *   - Lightbox: full-screen image viewer on thumbnail click
- */
-
 import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
@@ -24,7 +11,7 @@ export interface PostCardData {
   title:      string
   sender:     string
   body?:      string
-  images?:    string[]   // additional images beyond the cover
+  images?:    string[]
 }
 
 interface PostCardBackProps {
@@ -46,6 +33,12 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
     setLightboxIndex(i)
     setLightboxOpen(true)
   }, [])
+
+  // Prevent Deck's touchmove handler from swallowing button taps
+  const handleCloseTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.stopPropagation()
+    onClose()
+  }, [onClose])
 
   function formatTimeAgo(date?: Date) {
     if (!date) return ''
@@ -78,17 +71,18 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
           zIndex:       99,
         }} />
 
-        {/* ── Header ─────────────────────────────────────────────────────────── */}
+        {/* Header */}
         <div style={{
-          display:   'flex',
+          display:       'flex',
           flexDirection: 'row',
-          alignItems:'flex-start',
-          padding:   '16px 16px 0',
-          gap:       10,
+          alignItems:    'flex-start',
+          padding:       '16px 16px 0',
+          gap:           10,
         }}>
-          {/* Close button */}
+          {/* Close button — touchEnd + onClick both wired to handle iOS tap */}
           <button
-            onClick={onClose}
+            onClick={(e) => { e.stopPropagation(); onClose() }}
+            onTouchEnd={handleCloseTouchEnd}
             style={{
               width:           28,
               height:          28,
@@ -104,6 +98,8 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
               fontSize:        13,
               color:           '#13131B',
               fontWeight:      500,
+              zIndex:          100,
+              position:        'relative',
             }}
           >
             ✕
@@ -166,39 +162,39 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
 
         {/* Divider */}
         <div style={{
-          height:     1,
+          height:          1,
           backgroundColor: 'rgba(111,111,118,0.17)',
-          margin:     '10px 20px 0',
+          margin:          '10px 20px 0',
         }} />
 
-        {/* ── Scrollable body ──────────────────────────────────────────────── */}
+        {/* Scrollable body */}
         <div
           ref={scrollRef}
           style={{
-            flex:        1,
-            overflowY:   'auto',
-            padding:     '14px 20px 8px',
-            scrollbarWidth: 'none',
-            touchAction: 'pan-y',
+            flex:               1,
+            overflowY:          'auto',
+            padding:            '14px 20px 8px',
+            scrollbarWidth:     'none',
+            touchAction:        'pan-y',
             overscrollBehavior: 'contain',
           }}
         >
           <p style={{
-            fontFamily:    '"DM Sans", sans-serif',
-            fontSize:      16,
-            lineHeight:    1.625,
-            color:         '#13131B',
-            letterSpacing: '-0.1px',
-            margin:        0,
-            whiteSpace:    'pre-wrap',
-            userSelect:    'text',
+            fontFamily:       '"DM Sans", sans-serif',
+            fontSize:         16,
+            lineHeight:       1.625,
+            color:            '#13131B',
+            letterSpacing:    '-0.1px',
+            margin:           0,
+            whiteSpace:       'pre-wrap',
+            userSelect:       'text',
             WebkitUserSelect: 'text',
           }}>
             {item.body ?? 'Pass a `body` field in your PostCardData to show content here.'}
           </p>
         </div>
 
-        {/* ── Footer ──────────────────────────────────────────────────────── */}
+        {/* Footer */}
         <div style={{
           display:        'flex',
           flexDirection:  'row',
@@ -304,19 +300,19 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
           <button
             onClick={onReply}
             style={{
-              backgroundColor:  '#585BBB',
-              color:            '#fff',
-              border:           'none',
-              borderRadius:     12,
-              padding:          '12px 22px',
-              cursor:           'pointer',
-              display:          'flex',
-              alignItems:       'center',
-              gap:              8,
-              fontFamily:       '"DM Sans", sans-serif',
-              fontSize:         15,
-              fontWeight:       600,
-              letterSpacing:    '-0.2px',
+              backgroundColor: '#585BBB',
+              color:           '#fff',
+              border:          'none',
+              borderRadius:    12,
+              padding:         '12px 22px',
+              cursor:          'pointer',
+              display:         'flex',
+              alignItems:      'center',
+              gap:             8,
+              fontFamily:      '"DM Sans", sans-serif',
+              fontSize:        15,
+              fontWeight:      600,
+              letterSpacing:   '-0.2px',
             }}
           >
             Reply <ArrowRight size={15} />
@@ -324,7 +320,7 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
         </div>
       </div>
 
-      {/* ── Lightbox ────────────────────────────────────────────────────────── */}
+      {/* Lightbox */}
       {lightboxOpen && (
         <div
           onClick={() => setLightboxOpen(false)}
@@ -356,7 +352,6 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
 
           {images.length > 1 && (
             <>
-              {/* Prev/next */}
               <button
                 onClick={e => { e.stopPropagation(); setLightboxIndex(i => Math.max(0, i - 1)) }}
                 style={{ position: 'fixed', left: 24, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%', width: 44, height: 44, color: '#fff', fontSize: 20, cursor: 'pointer' }}
@@ -365,8 +360,6 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
                 onClick={e => { e.stopPropagation(); setLightboxIndex(i => Math.min(images.length - 1, i + 1)) }}
                 style={{ position: 'fixed', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%', width: 44, height: 44, color: '#fff', fontSize: 20, cursor: 'pointer' }}
               >›</button>
-
-              {/* Dots */}
               <div style={{ display: 'flex', gap: 6, marginTop: 24 }}>
                 {images.map((_, i) => (
                   <div

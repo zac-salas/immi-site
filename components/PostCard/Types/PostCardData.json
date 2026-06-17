@@ -5,7 +5,7 @@
 { 
     "id": 1, 
     "imageUrl": "/images/Blorb.png", 
-    "stampUrl": "/images/Art Stamp.svg", 
+    "stampUrl": "/images/Art Stamp.png", 
     "title": "Invasion of the Blorbs", 
     "body": "It started on a Tuesday, as most invasions do.` + `The blorbs came without warning, a shimmering wave rolling across the cityscape. At first, people thought it was a mirage or some kind of atmospheric anomaly. \n But as the blorbs solidified into gelatinous, translucent creatures, panic set in. They were about the size of a car, with no discernible features except for a faint, pulsating glow from within. The blorbs moved with an eerie grace, undulating through the streets and enveloping everything in their path. They seemed to consume matter, leaving behind only a slimy residue. Scientists were baffled, unable to determine their origin or purpose. The government issued evacuation orders, but the blorbs were relentless, spreading like a viscous tide. As the world watched in horror, it became clear that this was not just an invasion—it was an extinction event.`",
     "sender": "Zac Salas" 
@@ -16,14 +16,16 @@
     "imageUrl": "/images/Soccer.png",
     "stampUrl": "/images/Celebrate Stamp.png",
     "title": "It's Time to Celebrate",
+    "body": "It started on a Tuesday, as most invasions do.` + `The blorbs came without warning, a shimmering wave rolling across the cityscape. At first, people thought it was a mirage or some kind of atmospheric anomaly. \n But as the blorbs solidified into gelatinous, translucent creatures, panic set in. They were about the size of a car, with no discernible features except for a faint, pulsating glow from within. The blorbs moved with an eerie grace, undulating through the streets and enveloping everything in their path. They seemed to consume matter, leaving behind only a slimy residue. Scientists were baffled, unable to determine their origin or purpose. The government issued evacuation orders, but the blorbs were relentless, spreading like a viscous tide. As the world watched in horror, it became clear that this was not just an invasion—it was an extinction event.`",
     "sender": "Jonathan Cohen" 
 },
 
 { 
     "id": 3,
     "imageUrl": "/images/Doodle.png",
-    "stampUrl": "/images/Work Stamp.svg",
+    "stampUrl": "/images/Work Stamp.png",
     "title": "Tales From Behind the Desk",
+    "body": "The office was quiet, save for the soft hum of computers and the occasional creak of a chair. Then, out of nowhere, a loud crash echoed through the room. Everyone looked up to see a paper airplane had crashed into the monitor of the poor soul who had been trying to finish a report. The room erupted in laughter, and for a moment, the stress of the day was forgotten.",
     "sender": "Your Dreadful Coworker" 
   }
   

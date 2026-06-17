@@ -31,13 +31,15 @@
 .stampTitle{
     display: flex;
     justify-content:space-between;
+    paddding-left: 2px;
+    padding-right: 4px;
     
 }
 
 .copy{
     display: inline;
     max-width: 100%;
-
+    width: 75%;
 }
 
 .fromLine{

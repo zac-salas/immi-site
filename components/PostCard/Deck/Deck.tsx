@@ -157,6 +157,22 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
     return () => document.removeEventListener('fullscreenchange', handler)
   }, [])
 
+  // Prevent page scroll on swipe but allow taps
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+    let startX = 0, startY = 0
+    const onStart = (e: TouchEvent) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY }
+    const onMove  = (e: TouchEvent) => {
+      const dx = Math.abs(e.touches[0].clientX - startX)
+      const dy = Math.abs(e.touches[0].clientY - startY)
+      if (dx > 5 || dy > 5) e.preventDefault()
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
+    return () => { el.removeEventListener('touchstart', onStart); el.removeEventListener('touchmove', onMove) }
+  }, [])
+
   const unread = instances.filter(c => c.status === 'unread')
   const read   = instances
     .filter(c => c.status === 'read')
@@ -188,75 +204,18 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
           gap:             24,
           position:        'relative',
           backgroundColor: isFullscreen ? '#EEEEF5' : 'transparent',
-          minHeight:       isFullscreen ? '100vh' : 'auto',
-          padding:         isFullscreen ? '48px 24px 32px' : '0',
+          justifyContent:  isFullscreen ? 'center' : 'flex-start',
+          minHeight:       isFullscreen ? '100vh' : CARD_H + 80,
+          height:          isFullscreen ? '100vh' : CARD_H + 80,
+          padding:         '0',
           boxSizing:       'border-box',
           userSelect:      'none',
           WebkitUserSelect:'none',
         }}
       >
-        {/* ── Bottom-right control strip ──────────────────────────────────── */}
-        <div style={{
-          position:  'absolute',
-          bottom:    12,
-          right:     12,
-          display:   'flex',
-          gap:       6,
-          zIndex:    1000,
-        }}>
-          {/* Restart */}
-          <button
-            onClick={restart}
-            title="Restart demo"
-            style={{
-              width:           32,
-              height:          32,
-              borderRadius:    8,
-              border:          '1.5px solid rgba(111,111,118,0.2)',
-              backgroundColor: 'rgba(255,255,255,0.7)',
-              backdropFilter:  'blur(4px)',
-              cursor:          'pointer',
-              display:         'flex',
-              alignItems:      'center',
-              justifyContent:  'center',
-              color:           '#6F6F76',
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M1 4a6 6 0 1 1 0 6"/>
-              <polyline points="1 1 1 4 4 4"/>
-            </svg>
-          </button>
-
-          {/* Fullscreen */}
-          <button
-            onClick={toggleFullscreen}
-            title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            style={{
-              width:           32,
-              height:          32,
-              borderRadius:    8,
-              border:          '1.5px solid rgba(111,111,118,0.2)',
-              backgroundColor: 'rgba(255,255,255,0.7)',
-              backdropFilter:  'blur(4px)',
-              cursor:          'pointer',
-              display:         'flex',
-              alignItems:      'center',
-              justifyContent:  'center',
-              color:           '#6F6F76',
-            }}
-          >
-            {isFullscreen ? (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M5 1H1v4M9 1h4v4M5 13H1v-4M9 13h4v-4"/>
-              </svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/>
-              </svg>
-            )}
-          </button>
-        </div>
+        {/* Hidden triggers for PageCreate */}
+        <button data-deck-restart onClick={restart} style={{ display: 'none' }} />
+        <button data-deck-fullscreen onClick={toggleFullscreen} style={{ display: 'none' }} />
 
         {/* ── Deck view ─────────────────────────────────────────────────────── */}
         {!isListMode && (
@@ -268,6 +227,7 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
             alignItems: 'center',
             justifyContent: 'center',
           }}>
+            <SectionHeader label="Unread" count={`${unread.length} new`} />
             <AnimatePresence>
               {unread.length === 0 ? (
                 <motion.div
@@ -341,9 +301,17 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
           </div>
         )}
 
-        {/* ── List view ─────────────────────────────────────────────────────── */}
+        {/* List view */}
         {isListMode && (
-          <div style={{ width: CARD_W }}>
+          <div style={{
+            width:           CARD_W,
+            maxHeight:       isFullscreen ? 'calc(100vh - 120px)' : CARD_H,
+            overflowY:       'auto',
+            paddingBottom:   60,
+            paddingTop:      8,
+            scrollbarWidth:  'none',
+            msOverflowStyle: 'none',
+          } as React.CSSProperties}>
             {/* Unread section */}
             <SectionHeader label="Unread" count={`${unread.length} new`} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: ROW_GAP, marginBottom: 24 }}>
@@ -445,25 +413,31 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
           })()}
         </AnimatePresence>
 
-        {/* ── Toggle button ─────────────────────────────────────────────────── */}
+        {/* Toggle button — pinned to bottom-center */}
         <motion.button
           ref={buttonRef}
           onClick={() => setIsListMode(v => !v)}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
-          layout
           style={{
+            position:      isFullscreen ? 'fixed' : 'absolute',
+            bottom:        isFullscreen ? 32 : 16,
+            left:          '50%',
+            marginLeft:    -60,
+            width:         120,
             background:    '#585BBB',
             color:         '#fff',
             border:        'none',
             borderRadius:  999,
-            padding:       '10px 24px',
+            padding:       '10px 0',
             cursor:        'pointer',
             fontSize:      14,
             fontFamily:    '"DM Sans", sans-serif',
             fontWeight:    600,
             letterSpacing: '-0.2px',
             boxShadow:     '0 4px 16px rgba(88,91,187,0.3)',
+            zIndex:        1001,
+            textAlign:     'center',
           }}
         >
           {isListMode ? 'Back to Deck' : 'View Read'}
@@ -706,15 +680,17 @@ const DeckCard = memo(function DeckCard({
       </motion.div>
 
       {/* Back face */}
-      <motion.div style={{
-        position:             'absolute', inset: 0,
-        opacity:              backOpacity,
-        rotateY:              backRotateY,
-        transformOrigin:      'center center',
-        backfaceVisibility:   'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        pointerEvents:        isFlipped ? 'auto' : 'none',
-      }}>
+      <motion.div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position:             'absolute', inset: 0,
+          opacity:              backOpacity,
+          rotateY:              backRotateY,
+          transformOrigin:      'center center',
+          backfaceVisibility:   'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          pointerEvents:        isFlipped ? 'auto' : 'none',
+        }}>
         {renderBack(item, onCloseFlip)}
 
         {/* Edge drag handles — narrow strips on left/right edges of the back
@@ -740,7 +716,7 @@ const DeckCard = memo(function DeckCard({
               width:       44,
               background:  'transparent',
               zIndex:      100,
-              touchAction: 'pan-y',
+              touchAction: 'none',
               cursor:      'grab',
             }}
           />
