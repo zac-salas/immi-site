@@ -1,0 +1,118 @@
+.card{
+    /* width: 368px; */
+    height: 475px;
+    background: #FAFBFF;
+    border-radius: 16px;
+    background-image: url("/images/Postcard Base.svg");
+    padding: 16px;
+    background-origin: content-box;
+    background-blend-mode:normal;
+}
+
+.title{
+    font-family: var(--font-eb-garamond);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -.33px;
+    color: #13131B;
+    margin-bottom: 0px;
+    padding-bottom: 2px;
+}
+
+.cardTop{
+    display: flex;
+    max-width: 100%;
+    margin:auto;    
+    border-radius: 4px;
+    margin-bottom: 12px;
+    height: 321px;
+}
+
+.stampTitle{
+    display: flex;
+    justify-content:space-between;
+    paddding-left: 2px;
+    padding-right: 4px;
+    
+}
+
+.copy{
+    display: inline;
+    max-width: 100%;
+    width: 75%;
+}
+
+.fromLine{
+ display: flex;
+ border-width: 0px 0px 1px 0px;
+ border-color: #6f6f762b;
+ padding-bottom: 0px;
+
+}
+
+.from{
+ font-family: var(--font-geist-mono);
+ color: #6F6F76;
+ alignment-baseline: ideographic;
+ font-size: 12px;
+ letter-spacing: -.33px;
+ font-weight: 500;
+ padding-right: 4px;
+ padding-top: 6px;
+ margin-bottom: -6px;
+ padding-bottom: 0px;
+}
+
+.name{
+ font-family: var(--font-script-caveat);
+ color: #414149;
+ font-size: 20px;
+ letter-spacing: -.33px;
+ padding-bottom: 2px;
+ line-height: 1.2;
+ margin-bottom:0px;
+ padding-bottom: 0px;
+}
+
+.pic{
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    object-fit: cover;
+    user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.stamp{
+        border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    object-fit: cover;
+    user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+
+.tap{
+    color: #7E7F83;
+    display: flex;
+    max-width: 100%;
+    margin:auto;
+    justify-content: center;
+    padding-top: 16px;
+    font-style: italic;
+    font-size: 14px;
+    padding-bottom:64px
+}
+
+.arrow{
+    padding-top: 2px;
+    height: 18px;
+
+}
