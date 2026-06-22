@@ -1,0 +1,33 @@
+{
+
+"cards":[
+
+{ 
+    "id": 1, 
+    "imageUrl": "/images/doodlecard.png", 
+    "stampUrl": "/images/Art Stamp.png", 
+    "title": "Invasion of the Blorbs", 
+    "body": "It started on a Tuesday, as most invasions do.` + `The blorbs came without warning, a shimmering wave rolling across the cityscape. At first, people thought it was a mirage or some kind of atmospheric anomaly. \n But as the blorbs solidified into gelatinous, translucent creatures, panic set in. They were about the size of a car, with no discernible features except for a faint, pulsating glow from within. The blorbs moved with an eerie grace, undulating through the streets and enveloping everything in their path. They seemed to consume matter, leaving behind only a slimy residue. Scientists were baffled, unable to determine their origin or purpose. The government issued evacuation orders, but the blorbs were relentless, spreading like a viscous tide. As the world watched in horror, it became clear that this was not just an invasion—it was an extinction event.`",
+    "sender": "Zac Salas" 
+},
+
+{ 
+    "id": 2,
+    "imageUrl": "/images/Soccer.png",
+    "stampUrl": "/images/Celebrate Stamp.png",
+    "title": "It's Time to Celebrate",
+    "body": "It started on a Tuesday, as most invasions do.` + `The blorbs came without warning, a shimmering wave rolling across the cityscape. At first, people thought it was a mirage or some kind of atmospheric anomaly. \n But as the blorbs solidified into gelatinous, translucent creatures, panic set in. They were about the size of a car, with no discernible features except for a faint, pulsating glow from within. The blorbs moved with an eerie grace, undulating through the streets and enveloping everything in their path. They seemed to consume matter, leaving behind only a slimy residue. Scientists were baffled, unable to determine their origin or purpose. The government issued evacuation orders, but the blorbs were relentless, spreading like a viscous tide. As the world watched in horror, it became clear that this was not just an invasion—it was an extinction event.`",
+    "sender": "Jonathan Cohen" 
+},
+
+{ 
+    "id": 3,
+    "imageUrl": "/images/yunquecard.png",
+    "stampUrl": "/images/Nature Stamp.png",
+    "title": "Tales From Behind the Desk",
+    "body": "Cool pic I took during my teams meeting.",
+    "sender": "Your Dreadful Coworker" 
+  }
+  
+ ]
+}
