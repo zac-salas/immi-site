@@ -107,7 +107,7 @@ export default function PageCreate({ setPage }: { setPage: (p: Page) => void }) 
             </p>
           </div>
           <div style={{
-            background: '#EEEEF5', borderRadius: mobile ? 20 : 28,
+            background: '#f8f8ff', borderRadius: mobile ? 20 : 28,
             padding: mobile ? '40px 16px 32px' : '60px 24px',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
             border: '1px solid rgba(127,131,232,0.12)',
@@ -169,7 +169,7 @@ export default function PageCreate({ setPage }: { setPage: (p: Page) => void }) 
           </div>
         </div>
       </section>
-
+      <h2 style={{ fontWeight: 500, fontSize: 'clamp(24px,3vw,38px)', letterSpacing: '-0.03em', color: '#0f0f14', marginBottom: 12 }}>Like what you see? Dowload immi for yourself.</h2>
       <Footer setPage={setPage}/>
     </div>
   )

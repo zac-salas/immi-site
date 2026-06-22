@@ -66,7 +66,8 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
           position:     'absolute',
           inset:        0,
           borderRadius: 16,
-          border:       '1.5px dotted rgba(111,111,118,0.25)',
+          borderWidth: 1,
+          border:       'dotted rgba(111,111,118,0.25)',
           pointerEvents:'none',
           zIndex:       99,
         }} />
@@ -143,8 +144,8 @@ export default function PostCardBack({ item, onClose, onReply }: PostCardBackPro
           {/* Stamp */}
           {item.stampUrl && (
             <div style={{
-              width:        52,
-              height:       60,
+              width:        64,
+              height:       64,
               flexShrink:   0,
               borderRadius: 4,
               overflow:     'hidden',

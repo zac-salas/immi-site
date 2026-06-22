@@ -243,6 +243,7 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
                     justifyContent: 'center',
                     gap:            12,
                     paddingBottom:  40,
+                    zIndex: 999,
                   }}
                 >
                   {/* Checkmark circle */}
@@ -436,7 +437,7 @@ export default function Deck({ cards: initialCards, renderCard, renderBack, onCa
             fontWeight:    600,
             letterSpacing: '-0.2px',
             boxShadow:     '0 4px 16px rgba(88,91,187,0.3)',
-            zIndex:        1001,
+            zIndex:        100,
             textAlign:     'center',
           }}
         >
@@ -506,7 +507,7 @@ const DeckCard = memo(function DeckCard({
   const flipY   = useMotionValue(0)
 
   // Drag rotation: tilt card as it moves horizontally
-  const dragRot = useTransform(dragX, [-CARD_W, 0, CARD_W], [-18, 0, 18])
+  const dragRot = useTransform(dragX, [-CARD_W, 0, CARD_W], [-8, 0, 8])
 
   // Flip faces
   const frontOpacity = useTransform(flipY, [0, 89, 90],   [1, 1, 0])

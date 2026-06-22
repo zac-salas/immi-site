@@ -5,63 +5,62 @@ import Image from 'next/image'
 import { useIsMobile, Footer, StoreBtn } from '@/components/PostCard/Shared'
 import type { Page } from '@/components/PostCard/Shared'
 import cardstyles from '@/components/PostCard/PostCard/postcard.module.css'
-import { div } from 'motion/react-client'
 
-// ─── Card data for the hero stack ─────────────────────────────────────────────
+// Card data — each card pairs its postcard image with its pre-blurred bg
 
 const HERO_CARDS = [
   {
-    imageUrl: '/images/Cafe Postcard.jpg',
-    bgUrl:    '/images/Cafe.jpg',
+    imageUrl: '/images/cafecard.png',
+    bgUrl:    '/images/cafeblur.png',
     title:    'Timeless Conversations',
     sender:   'An old friend',
-    stampUrl: '/images/Default Stamp.png',
+    stampUrl: '/images/Casual Stamp.png',
     stampRot: -3,
   },
   {
-    imageUrl: '/images/cyclops.jpeg',
-    bgUrl:    '/images/cyclops.jpeg',
-    title:    'The Ultimate Le Freak',
-    sender:   'Your Weird Uncle',
+    imageUrl: '/images/freakcard.png',
+    bgUrl:    '/images/freakblur.png',
+    title:    'Check Out Le Freak',
+    sender:   'That One Guy',
     stampUrl: '/images/Entertainment Stamp.png',
     stampRot: 4,
   },
   {
-    imageUrl: '/images/Doodle.png',
-    bgUrl:    '/images/Doodle.png',
-    title:    "Doodle For The Day",
-    sender:   'Your Pal',
+    imageUrl: '/images/doodlecard.png',
+    bgUrl:    '/images/doodleblur.png',
+    title:    'Doodle For The Day',
+    sender:   'Your artsy friend',
     stampUrl: '/images/Art Stamp.png',
     stampRot: -2,
   },
   {
-    imageUrl: '/images/mountain.jpeg',
-    bgUrl:    '/images/mountain.jpeg',
-    title:    "Work Work Work",
-    sender:   'Your Solo Traveling Freind',
+    imageUrl: '/images/yunquecard.png',
+    bgUrl:    '/images/yunqueblur.png',
+    title:    'Love my remote work view',
+    sender:   'Your Friend on a Tuesday',
     stampUrl: '/images/Nature Stamp.png',
     stampRot: -1,
   },
   {
-    imageUrl: '/images/guitar.png',
-    bgUrl:    '/images/guitar.png',
-    title:    "Gotta See the Phantom",
-    sender:   'Your Music Lover',
+    imageUrl: '/images/phantomcard.png',
+    bgUrl:    '/images/phantomblur.png',
+    title:    'Gotta See the Phantom',
+    sender:   'Your Music Snob Friend',
     stampUrl: '/images/Entertainment Stamp.png',
-    stampRot: -1,
+    stampRot: 2,
   },
   {
-    imageUrl: '/images/bbq.png',
-    bgUrl:    '/images/bbq.png',
-    title:    "BBQ Time",
-    sender:   'Your Friend',
+    imageUrl: '/images/bbqcard.png',
+    bgUrl:    '/images/bbqblur.png',
+    title:    'Mooooooooooooo',
+    sender:   'Your Neighbor',
     stampUrl: '/images/Food Stamp.png',
-    stampRot: 2,
+    stampRot: -3,
   },
 ]
 
 
-// ─── HeroCardStack ────────────────────────────────────────────────────────────
+// HeroCardStack
 
 function HeroCardStack() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -113,7 +112,7 @@ function HeroCardStack() {
               objectFit: 'cover',
               objectPosition: '30% center',
               opacity: isActive ? 0.45 : 0,
-              filter: 'saturate(0.65) blur(6px) brightness(0.85)',
+              filter: 'saturate(0.65) brightness(0.85)',
               transition: 'opacity 1200ms cubic-bezier(0.25, 1, 0.5, 1)', // Sweeping, buttery crossfade
               willChange: 'opacity',
               zIndex: isActive ? 1 : 0,
