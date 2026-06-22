@@ -22,10 +22,10 @@
 
 { 
     "id": 3,
-    "imageUrl": "/images/Doodle.png",
-    "stampUrl": "/images/Work Stamp.png",
+    "imageUrl": "/images/yunquecard.png",
+    "stampUrl": "/images/Nature Stamp.png",
     "title": "Tales From Behind the Desk",
-    "body": "The office was quiet, save for the soft hum of computers and the occasional creak of a chair. Then, out of nowhere, a loud crash echoed through the room. Everyone looked up to see a paper airplane had crashed into the monitor of the poor soul who had been trying to finish a report. The room erupted in laughter, and for a moment, the stress of the day was forgotten.",
+    "body": "Cool pic I took during my teams meeting.",
     "sender": "Your Dreadful Coworker" 
   }
   
