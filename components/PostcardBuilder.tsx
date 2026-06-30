@@ -6,6 +6,7 @@ import { useIsMobile } from '@/components/PostCard/Shared'
 import type { Page } from '@/components/PostCard/Shared'
 import CardView from '@/app/cards/[id]/CardView'
 import type { PostcardRow } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 const TEMPLATES = [
   { id: 'cafe',    url: '/images/cafecard.png',    label: 'café' },
@@ -58,30 +59,40 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
   const stepIndex = STEPS.indexOf(step)
 
   async function handleFileUpload(file: File) {
-    if (file.size > 8 * 1024 * 1024) {
-      setError('Image is too large — keep it under 8MB.')
-      return
-    }
-    setError(null)
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const res = await fetch('/api/postcards/upload', {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Upload failed')
-
-      setImageUrl(data.imageUrl)
-    } catch (e: any) {
-      setError(e.message || 'Upload failed — try a different image.')
-    } finally {
-      setUploading(false)
-    }
+  if (file.size > 8 * 1024 * 1024) {
+    setError('Image is too large — keep it under 8MB.')
+    return
   }
+
+  // Basic client-side type check — not as strong as magic bytes but
+  // sufficient given Supabase Storage's own content-type enforcement.
+  const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
+  if (!ALLOWED.includes(file.type)) {
+    setError('Unsupported file type — please upload a JPEG, PNG, or WebP image.')
+    return
+  }
+
+  setError(null)
+  setUploading(true)
+  try {
+    const ext = file.type.split('/')[1].replace('jpeg', 'jpg')
+    const path = `${crypto.randomUUID()}.${ext}`
+
+    const { error: uploadError } = await supabase
+      .storage
+      .from('postcard-images')
+      .upload(path, file, { contentType: file.type })
+
+    if (uploadError) throw new Error('Upload failed — try a different image.')
+
+    const { data } = supabase.storage.from('postcard-images').getPublicUrl(path)
+    setImageUrl(data.publicUrl)
+  } catch (e: any) {
+    setError(e.message || 'Upload failed — try a different image.')
+  } finally {
+    setUploading(false)
+  }
+}
 
   async function handleGenerate() {
     if (!message.trim() || !senderName.trim() || !recipientName.trim()) {
