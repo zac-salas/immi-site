@@ -339,7 +339,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
                   fontFamily: '"EB Garamond", Georgia, serif', fontSize: 20, fontWeight: 500,
                   color: '#13131B', margin: '0 0 4px',
                 }}>
-                  {card.recipient_name ? `For ${card.recipient_name}` : 'A postcard for you'}
+                  {card.recipient_name ? ` ${card.recipient_name}` : 'A postcard for you'}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, borderBottom: '1px solid rgba(111,111,118,0.17)', paddingBottom: 2 }}>
                   <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#6F6F76', fontWeight: 500 }}>From:</span>
