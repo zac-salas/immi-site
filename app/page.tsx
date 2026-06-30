@@ -6,6 +6,7 @@ import type { Page } from '@/components/PostCard/Shared'
 import PageHome   from '@/components/PostCard/PageHome'
 import PageAbout  from '@/components/PostCard/PageAbout'
 import PageCreate from '@/components/PostCard/PageCreate'
+import PageApp from '@/components/PostCard/PageApp'
 
 export default function Home() {
   const [page, setPage] = useState<Page>('home')
@@ -40,8 +41,9 @@ export default function Home() {
       }}>
         <Nav page={page} setPage={handleSetPage}/>
         {page === 'home'  && <PageHome   setPage={handleSetPage}/>}
-        {page === 'app'   && <PageCreate setPage={handleSetPage}/>}
+        {page === 'create'   && <PageCreate setPage={handleSetPage}/>}
         {page === 'about' && <PageAbout  setPage={handleSetPage}/>}
+        {page === 'app' && <PageApp  setPage={handleSetPage}/>}
       </div>
     </>
   )

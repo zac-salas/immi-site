@@ -365,7 +365,7 @@ export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
                 <StoreBtn store="android" />
               </div>
             <button
-                onClick={() => setPage('app')}
+                onClick={() => setPage('create')}
                 style={{
                     marginTop: 18,
                     background: 'none', border: 'none', cursor: 'pointer',

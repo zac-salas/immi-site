@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-export type Page = 'home' | 'app' | 'about'
+export type Page = 'home' | 'app' | 'about' | 'create'
 
 // ─── useIsMobile ───────────────────────────────────────────────────────────────
 
@@ -35,7 +35,8 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
   const links: { key: Page; label: string }[] = [
     { key: 'home',  label: 'home' },
     { key: 'about', label: 'about' },
-    { key: 'app',   label: 'create' },
+    { key: 'create',   label: 'create' },
+    { key: 'app',   label: 'app' },
   ]
 
   return (
