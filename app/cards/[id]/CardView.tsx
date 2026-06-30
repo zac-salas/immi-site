@@ -110,7 +110,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
     img.onload = () => {
       try {
         const colors = getPaletteSync(img, { colorCount: 3 })
-        setPalette(colors.map(c => vibrantize(c.css())))
+        if (colors) setPalette(colors.map(c => vibrantize(c.css())))
       } catch {
         // Extraction can fail on decode issues or edge-case images —
         // keep whatever palette was already showing rather than break
