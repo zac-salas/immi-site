@@ -1,7 +1,4 @@
 
-
-
-
 import type { Page } from '@/components/PostCard/Shared'
 import PostcardBuilder from '@/components/PostcardBuilder'
 
