@@ -32,8 +32,8 @@ const TITLE_MAX = 40
 type Step = 'template' | 'write' | 'share'
 
 const STEP_COPY: Record<Step, { title: string; subtitle: string }> = {
-  template: { title: 'Pick a Photo',         subtitle: 'this is the front of your card.' },
-  write:    { title: 'Write Your Message',   subtitle: 'this will live on the back of the card.' },
+  template: { title: 'Pick a Photo',          subtitle: 'this is the front of your card.' },
+  write:    { title: 'Write Your Message',    subtitle: 'this will live on the back of the card.' },
   share:    { title: 'Your Postcard is Ready', subtitle: "save this link — it won't be sent to you again." },
 }
 
@@ -41,58 +41,56 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
   const mobile = useIsMobile()
   const [step, setStep] = useState<Step>('template')
 
-  const [imageUrl, setImageUrl]   = useState(TEMPLATES[0].url)
-  const [stampUrl, setStampUrl]   = useState(STAMPS[0].url)
-  const [message, setMessage]     = useState('')
-  const [senderName, setSenderName]     = useState('')
+  const [imageUrl, setImageUrl]           = useState(TEMPLATES[0].url)
+  const [stampUrl, setStampUrl]           = useState(STAMPS[0].url)
+  const [message, setMessage]             = useState('')
+  const [senderName, setSenderName]       = useState('')
   const [recipientName, setRecipientName] = useState('')
 
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState<string | null>(null)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState<string | null>(null)
+  const [shareUrl, setShareUrl]       = useState<string | null>(null)
   const [createdCard, setCreatedCard] = useState<PostcardRow | null>(null)
 
   const STEPS: Step[] = ['template', 'write', 'share']
   const stepIndex = STEPS.indexOf(step)
 
   async function handleFileUpload(file: File) {
-  if (file.size > 8 * 1024 * 1024) {
-    setError('Image is too large — keep it under 8MB.')
-    return
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Image is too large — keep it under 8MB.')
+      return
+    }
+
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
+    if (!ALLOWED.includes(file.type)) {
+      setError('Unsupported file type — please upload a JPEG, PNG, or WebP image.')
+      return
+    }
+
+    setError(null)
+    setUploading(true)
+    try {
+      const ext = file.type.split('/')[1].replace('jpeg', 'jpg')
+      const path = `${crypto.randomUUID()}.${ext}`
+
+      const { error: uploadError } = await supabase
+        .storage
+        .from('postcard-images')
+        .upload(path, file, { contentType: file.type })
+
+      if (uploadError) throw new Error('Upload failed — try a different image.')
+
+      const { data } = supabase.storage.from('postcard-images').getPublicUrl(path)
+      setImageUrl(data.publicUrl)
+    } catch (e: any) {
+      setError(e.message || 'Upload failed — try a different image.')
+    } finally {
+      setUploading(false)
+    }
   }
-
-  // Basic client-side type check — not as strong as magic bytes but
-  // sufficient given Supabase Storage's own content-type enforcement.
-  const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
-  if (!ALLOWED.includes(file.type)) {
-    setError('Unsupported file type — please upload a JPEG, PNG, or WebP image.')
-    return
-  }
-
-  setError(null)
-  setUploading(true)
-  try {
-    const ext = file.type.split('/')[1].replace('jpeg', 'jpg')
-    const path = `${crypto.randomUUID()}.${ext}`
-
-    const { error: uploadError } = await supabase
-      .storage
-      .from('postcard-images')
-      .upload(path, file, { contentType: file.type })
-
-    if (uploadError) throw new Error('Upload failed — try a different image.')
-
-    const { data } = supabase.storage.from('postcard-images').getPublicUrl(path)
-    setImageUrl(data.publicUrl)
-  } catch (e: any) {
-    setError(e.message || 'Upload failed — try a different image.')
-  } finally {
-    setUploading(false)
-  }
-}
 
   async function handleGenerate() {
     if (!message.trim() || !senderName.trim() || !recipientName.trim()) {
@@ -133,9 +131,6 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
 
   const copy = STEP_COPY[step]
 
-  // Step 3 bypasses the wizard chrome entirely — full-bleed CardView,
-  // identical to what the recipient will see, with a dismissible
-  // owner-only copy-link overlay layered on top.
   if (step === 'share' && createdCard && shareUrl) {
     return (
       <CardView
@@ -154,210 +149,228 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
   }
 
   return (
-    <div style={{
-      minHeight: '100svh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingTop: 88,
-      paddingBottom: 24,
-      paddingLeft: 16,
-      paddingRight: 16,
-      boxSizing: 'border-box',
-    }}>
-
-      {/* Heading + subtitle — sits outside the white card, consistent
-          across all three steps, content driven by the active step */}
-      <h3 style={{ ...labelHeading, marginBottom: 4 }}>{copy.title}</h3>
-      <p style={{ ...helperText, marginBottom: 20 }}>{copy.subtitle}</p>
+    <>
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position: -200% 0; }
+          100% { background-position:  200% 0; }
+        }
+      `}</style>
 
       <div style={{
-        background:   '#FAFBFF',
-        borderRadius: 16,
-        padding:      mobile ? '28px 24px' : '32px 36px',
-        maxWidth:     430,
-        width:        '100%',
-        margin:       '0 auto',
-        boxShadow:    '0 20px 60px rgba(43,44,73,0.14), 0 4px 16px rgba(43,44,73,0.08)',
+        minHeight: '100svh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 88,
+        paddingBottom: 24,
+        paddingLeft: 16,
+        paddingRight: 16,
+        boxSizing: 'border-box',
       }}>
 
-        {/* STEP 1 — Pick a photo */}
-        {step === 'template' && (
-          <div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              style={{
-                position: 'relative',
-                width: '100%',
-                aspectRatio: '1',
-                borderRadius: 8,
-                overflow: 'hidden',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                marginBottom: 16,
-                background: '#EEEEF5',
-                boxShadow: '0 2px 8px rgba(43,44,73,0.12), inset 0 0 0 1px rgba(43,44,73,0.06)',
-              }}
-            >
-              <Image src={imageUrl} alt="postcard photo preview" fill style={{ objectFit: 'cover' }} />
-              <div style={{
-                position: 'absolute', bottom: 10, right: 10,
-                width: 36, height: 36, borderRadius: '50%',
-                background: 'rgba(15,15,20,0.55)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backdropFilter: 'blur(4px)',
-              }}>
-                {uploading ? (
-                  <span style={{ fontSize: 10, color: '#FCFCFF' }}>...</span>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FCFCFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                )}
-              </div>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-              style={{ display: 'none' }}
-            />
+        <h3 style={{ ...labelHeading, marginBottom: 4 }}>{copy.title}</h3>
+        <p style={{ ...helperText, marginBottom: 20 }}>{copy.subtitle}</p>
 
-            <p style={{ fontSize: 13, color: '#6F6F76', textAlign: 'left', margin: '0 0 8px', fontFamily: '"DM Sans", sans-serif' }}>
-              or choose a template
-            </p>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: 6,
-              marginBottom: 24,
-            }}>
-              {TEMPLATES.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setImageUrl(t.url)}
-                  style={{
-                    position: 'relative',
-                    border: imageUrl === t.url ? '2px solid #7f83e8' : '2px solid transparent',
-                    borderRadius: 8,
-                    overflow: 'hidden',
-                    padding: 0,
-                    cursor: 'pointer',
-                    aspectRatio: '1',
-                  }}
-                >
-                  <Image src={t.url} alt={t.label} fill style={{ objectFit: 'cover' }} />
-                </button>
-              ))}
-            </div>
+        <div style={{
+          background:   '#FAFBFF',
+          borderRadius: 16,
+          padding:      mobile ? '28px 24px' : '32px 36px',
+          maxWidth:     430,
+          width:        '100%',
+          margin:       '0 auto',
+          boxShadow:    '0 20px 60px rgba(43,44,73,0.14), 0 4px 16px rgba(43,44,73,0.08)',
+        }}>
 
-            {error && <p style={errorText}>{error}</p>}
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setPage?.('home')} style={iconBackBtn} aria-label="Back to home">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-              </button>
-              <button onClick={() => setStep('write')} disabled={uploading} style={{ ...primaryBtn, flex: 1 }}>
-                {uploading ? 'Uploading...' : 'Continue'}
-              </button>
-            </div>
-
-            <StepDots stepIndex={stepIndex} />
-          </div>
-        )}
-
-        {/* STEP 2 — Write message + pick stamp */}
-        {step === 'write' && (
-          <div>
-            <label style={fieldLabel}>Message (required)</label>
-            <textarea
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              placeholder="Was thinking about you today..."
-              maxLength={1000}
-              rows={5}
-              style={textareaStyle}
-            />
-
-            <label style={fieldLabel}>Title (required)</label>
-            <input
-              value={recipientName}
-              onChange={e => setRecipientName(e.target.value.slice(0, TITLE_MAX))}
-              placeholder="Give your card a title"
-              maxLength={TITLE_MAX}
-              style={{ ...inputStyle, borderRadius: 8 }}
-            />
-            <p style={charCount}>{recipientName.length}/{TITLE_MAX}</p>
-
-            <label style={fieldLabel}>Your name (required)</label>
-            <input
-              value={senderName}
-              onChange={e => setSenderName(e.target.value)}
-              placeholder="Your name"
-              style={{ ...inputStyle, borderRadius: 8 }}
-            />
-
-            <label style={fieldLabel}>Stamp</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                position: 'relative', overflow: 'hidden',
-                border: '1px solid rgba(43,44,73,0.1)',
-              }}>
-                <Image src={stampUrl} alt="" fill style={{ objectFit: 'cover' }} />
-              </div>
-              <select
-                value={stampUrl}
-                onChange={e => setStampUrl(e.target.value)}
-                style={{ ...inputStyle, borderRadius: 8, marginBottom: 0, flex: 1, cursor: 'pointer' }}
+          {/* STEP 1 — Pick a photo */}
+          {step === 'template' && (
+            <div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '1',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  marginBottom: 16,
+                  background: '#EEEEF5',
+                  boxShadow: '0 2px 8px rgba(43,44,73,0.12), inset 0 0 0 1px rgba(43,44,73,0.06)',
+                }}
               >
-                {STAMPS.map(s => (
-                  <option key={s.url} value={s.url}>{s.label}</option>
+                <Image src={imageUrl} alt="postcard photo preview" fill style={{ objectFit: 'cover' }} />
+
+                {/* Shimmer sweep — visible only while an upload is in progress */}
+                {uploading && (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 1.2s ease-in-out infinite',
+                  }} />
+                )}
+
+                <div style={{
+                  position: 'absolute', bottom: 10, right: 10,
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'rgba(15,15,20,0.55)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backdropFilter: 'blur(4px)',
+                }}>
+                  {uploading ? (
+                    <span style={{ fontSize: 10, color: '#FCFCFF' }}>...</span>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FCFCFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  )}
+                </div>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                style={{ display: 'none' }}
+              />
+
+              <p style={{ fontSize: 13, color: '#6F6F76', textAlign: 'left', margin: '0 0 8px', fontFamily: '"DM Sans", sans-serif' }}>
+                or choose a template
+              </p>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: 6,
+                marginBottom: 24,
+              }}>
+                {TEMPLATES.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setImageUrl(t.url)}
+                    style={{
+                      position: 'relative',
+                      border: imageUrl === t.url ? '2px solid #7f83e8' : '2px solid transparent',
+                      borderRadius: 8,
+                      overflow: 'hidden',
+                      padding: 0,
+                      cursor: 'pointer',
+                      aspectRatio: '1',
+                    }}
+                  >
+                    <Image src={t.url} alt={t.label} fill style={{ objectFit: 'cover' }} />
+                  </button>
                 ))}
-              </select>
+              </div>
+
+              {error && <p style={errorText}>{error}</p>}
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setPage?.('home')} style={iconBackBtn} aria-label="Back to home">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                  </svg>
+                </button>
+                <button onClick={() => setStep('write')} disabled={uploading} style={{ ...primaryBtn, flex: 1 }}>
+                  {uploading ? 'Uploading...' : 'Continue'}
+                </button>
+              </div>
+
+              <StepDots stepIndex={stepIndex} />
             </div>
-            <p style={{ marginBottom: 20 }} />
+          )}
 
+          {/* STEP 2 — Write message + pick stamp */}
+          {step === 'write' && (
+            <div>
+              <label style={fieldLabel}>Message (required)</label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder="Was thinking about you today..."
+                maxLength={1000}
+                rows={5}
+                style={textareaStyle}
+              />
 
-            {error && <p style={errorText}>{error}</p>}
+              <label style={fieldLabel}>Title (required)</label>
+              <input
+                value={recipientName}
+                onChange={e => setRecipientName(e.target.value.slice(0, TITLE_MAX))}
+                placeholder="Give your card a title"
+                maxLength={TITLE_MAX}
+                style={{ ...inputStyle, borderRadius: 8 }}
+              />
+              <p style={charCount}>{recipientName.length}/{TITLE_MAX}</p>
 
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setStep('template')} style={iconBackBtn} aria-label="Back">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-              </button>
-              <button onClick={handleGenerate} disabled={loading} style={{ ...primaryBtn, flex: 1 }}>
-                {loading ? 'Creating...' : 'Create postcard'}
-              </button>
+              <label style={fieldLabel}>Your name (required)</label>
+              <input
+                value={senderName}
+                onChange={e => setSenderName(e.target.value)}
+                placeholder="Your name"
+                style={{ ...inputStyle, borderRadius: 8 }}
+              />
+
+              <label style={fieldLabel}>Stamp</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                  position: 'relative', overflow: 'hidden',
+                  border: '1px solid rgba(43,44,73,0.1)',
+                }}>
+                  <Image src={stampUrl} alt="" fill style={{ objectFit: 'cover' }} />
+                </div>
+                <select
+                  value={stampUrl}
+                  onChange={e => setStampUrl(e.target.value)}
+                  style={{ ...inputStyle, borderRadius: 8, marginBottom: 0, flex: 1, cursor: 'pointer' }}
+                >
+                  {STAMPS.map(s => (
+                    <option key={s.url} value={s.url}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <p style={{ marginBottom: 20 }} />
+
+              {error && <p style={errorText}>{error}</p>}
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setStep('template')} style={iconBackBtn} aria-label="Back">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                  </svg>
+                </button>
+                <button onClick={handleGenerate} disabled={loading} style={{ ...primaryBtn, flex: 1 }}>
+                  {loading ? 'Creating...' : 'Create postcard'}
+                </button>
+              </div>
+
+              <StepDots stepIndex={stepIndex} />
             </div>
+          )}
 
-            <StepDots stepIndex={stepIndex} />
-          </div>
-        )}
-
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
-// ─── Step dots ───────────────────────────────────────────────────────────────
+// ─── Step dots ────────────────────────────────────────────────────────────────
 
 function StepDots({ stepIndex }: { stepIndex: number }) {
   return (
     <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 16 }}>
       {[0, 1, 2].map(i => (
         <div key={i} style={{
-          width: i === stepIndex ? 8 : 6,
+          width:  i === stepIndex ? 8 : 6,
           height: i === stepIndex ? 8 : 6,
           borderRadius: '50%',
           background: i === stepIndex ? '#7f83e8' : 'rgba(127,131,232,0.25)',
@@ -368,7 +381,7 @@ function StepDots({ stepIndex }: { stepIndex: number }) {
   )
 }
 
-// ─── Style tokens ────────────────────────────────────────────────────────────
+// ─── Style tokens ─────────────────────────────────────────────────────────────
 
 const labelHeading: React.CSSProperties = {
   fontWeight: 600, fontSize: 28, color: '#0f0f14',

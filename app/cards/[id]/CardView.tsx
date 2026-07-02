@@ -250,7 +250,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
         position: 'absolute', top: 28, left: '50%', transform: 'translateX(-50%)',
         zIndex: 50, textAlign: 'center', pointerEvents: 'none',
       }}>
-        <Image src="/images/immi.svg" alt="immi" width={28} height={28} style={{ marginBottom: 8 }} />
+        <Image src="/images/immi.svg" alt="immi" width={28} height={28} style={{ marginBottom: 8, paddingLeft: 48, paddingRight:48, opacity:0.5 }} />
         <p style={{
           fontFamily: 'monospace', fontSize: 11, letterSpacing: '0.08em',
           textTransform: 'uppercase', color: 'rgba(43,44,73,0.4)', margin: 0,
@@ -393,7 +393,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
               >✕</button>
               <div style={{ flex: 1, paddingTop: 8 }}>
                 <p style={{ fontFamily: '"EB Garamond", Georgia, serif', fontSize: 20, fontWeight: 500, color: '#13131B', margin: '0 0 4px' }}>
-                  {card.recipient_name ? `For ${card.recipient_name}` : 'A postcard for you'}
+                  {card.recipient_name ? ` ${card.recipient_name}` : 'A postcard for you'}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, borderBottom: '.5px solid rgba(111,111,118,0.22)', paddingBottom: 2 }}>
                   <span style={{ fontFamily: 'monospace', color: '#6F6F76', fontSize: 12, fontWeight: 500 }}>From:</span>
@@ -442,7 +442,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.0, duration: 0.8 }}
         style={{
-          position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', bottom: 32, left: '0%', transform: 'translateX(-50%)',
           fontFamily: '"DM Sans", sans-serif', fontSize: 13,
           color: 'rgba(43,44,73,0.35)', fontStyle: 'italic',
           whiteSpace: 'nowrap', pointerEvents: 'none',
