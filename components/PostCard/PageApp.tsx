@@ -1,15 +1,14 @@
 'use client'
 
 import { useIsMobile, Footer } from '@/components/PostCard/Shared'
-import type { Page } from '@/components/PostCard/Shared'
 import Deck from '@/components/PostCard/Deck/Deck'
 import PostCard from '@/components/PostCard/PostCard/PostCard'
 import PostCardBack from '@/components/PostCard/PostCard/PostCardBack'
 import data from '@/components/PostCard/Types/PostCardData.json'
 
-// ─── Page: Create ──────────────────────────────────────────────────────────────
+// ─── Page: App ────────────────────────────────────────────────────────────────
 
-export default function PageApp({ setPage }: { setPage: (p: Page) => void }) {
+export default function PageApp() {
   const mobile = useIsMobile()
 
   const features = [
@@ -169,8 +168,12 @@ export default function PageApp({ setPage }: { setPage: (p: Page) => void }) {
           </div>
         </div>
       </section>
-      <h2 style={{ fontWeight: 500, fontSize: 'clamp(24px,3vw,38px)', letterSpacing: '-0.03em', color: '#0f0f14', marginBottom: 12 }}>Like what you see? Dowload immi for yourself.</h2>
-      <Footer setPage={setPage}/>
+
+      <h2 style={{ fontWeight: 500, fontSize: 'clamp(24px,3vw,38px)', letterSpacing: '-0.03em', color: '#0f0f14', marginBottom: 12 }}>
+        Like what you see? Download immi for yourself.
+      </h2>
+
+      <Footer />
     </div>
   )
 }

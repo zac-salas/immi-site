@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-export type Page = 'home' | 'app' | 'about' | 'create'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 
 // ─── useIsMobile ───────────────────────────────────────────────────────────────
 
@@ -20,24 +20,34 @@ export function useIsMobile() {
 
 // ─── Nav ───────────────────────────────────────────────────────────────────────
 
-export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+export function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const mobile = useIsMobile()
+  const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 10)
     window.addEventListener('scroll', h)
     return () => window.removeEventListener('scroll', h)
   }, [])
-  useEffect(() => { setMenuOpen(false) }, [page])
 
-  const links: { key: Page; label: string }[] = [
-    { key: 'home',  label: 'home' },
-    { key: 'about', label: 'about' },
-    { key: 'create',   label: 'create' },
-    { key: 'app',   label: 'app' },
+  // Close mobile menu on route change
+  useEffect(() => { setMenuOpen(false) }, [pathname])
+
+  const links = [
+    { href: '/',       label: 'home' },
+    { href: '/about',  label: 'about' },
+    { href: '/create', label: 'create' },
+    { href: '/app',    label: 'app' },
   ]
+
+  // Active state: '/' only matches exactly, others match by prefix
+  function isActive(href: string) {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
+  }
 
   return (
     <>
@@ -58,62 +68,64 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
         whiteSpace: 'nowrap',
       }}>
         {/* Logo */}
-        <button onClick={() => setPage('home')} style={{
+        <Link href="/" style={{
           display: 'flex', alignItems: 'center', gap: 7,
-          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          width: 56,
-          opacity: 0.8,
-          paddingBottom: 2,
+          padding: 0, width: 56, opacity: 0.8, paddingBottom: 2,
+          textDecoration: 'none',
         }}>
-            <img style={{  }} src="/images/immi.svg" alt="" />
-        </button>
+          <img src="/images/immi.svg" alt="immi" />
+        </Link>
 
-        {/* Links */}
-        {!mobile && links.map(({ key, label }) => (
-          <button key={key} onClick={() => setPage(key)} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: page === key ? 500 : 400,
-            color: '#2b2c49', opacity: page === key ? 1 : 0.6,
-            fontFamily: '"DM Sans", sans-serif', padding: 0,
+        {/* Desktop links */}
+        {!mobile && links.map(({ href, label }) => (
+          <Link key={href} href={href} style={{
+            fontSize: 13,
+            fontWeight: isActive(href) ? 500 : 400,
+            color: '#2b2c49',
+            opacity: isActive(href) ? 1 : 0.6,
+            fontFamily: '"DM Sans", sans-serif',
+            textDecoration: 'none',
             transition: 'opacity .15s',
           }}>
             {label}
-          </button>
+          </Link>
         ))}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24}}>
-        {/* Download CTA */}
-        <a
-          href="https://links.immi.community/invite/VbM49C1iFSMfvqzowoxtRRYrrSk2"
-          target="_blank" rel="noreferrer"
-          style={{
-            display: 'inline-flex', alignItems: 'center',
-            padding: '7px 16px', borderRadius: 100,
-            background: '#7f83e8', color: '#FCFCFF',
-            fontSize: 13, fontWeight: 500,
-            fontFamily: '"DM Sans", sans-serif',
-            letterSpacing: '-0.01em', textDecoration: 'none',
-          }}>
-          download
-        </a>
 
-        {/* Mobile hamburger */}
-        {mobile && (
-          <button onClick={() => setMenuOpen(v => !v)} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: 2, color: '#2b2c49',
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {menuOpen
-                ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
-                : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>
-              }
-            </svg>
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          {/* Download CTA */}
+          <a
+            href="https://links.immi.community/invite/VbM49C1iFSMfvqzowoxtRRYrrSk2"
+            target="_blank" rel="noreferrer"
+            style={{
+              display: 'inline-flex', alignItems: 'center',
+              padding: '7px 16px', borderRadius: 100,
+              background: '#7f83e8', color: '#FCFCFF',
+              fontSize: 13, fontWeight: 500,
+              fontFamily: '"DM Sans", sans-serif',
+              letterSpacing: '-0.01em', textDecoration: 'none',
+            }}>
+            download
+          </a>
+
+          {/* Mobile hamburger */}
+          {mobile && (
+            <button onClick={() => setMenuOpen(v => !v)} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 2, color: '#2b2c49',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {menuOpen
+                  ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
+                  : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>
+                }
+              </svg>
+            </button>
+          )}
         </div>
       </nav>
 
+      {/* Mobile dropdown menu */}
       {mobile && menuOpen && (
         <div style={{
           position: 'fixed', top: 72, left: '50%', transform: 'translateX(-50%)',
@@ -125,16 +137,17 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
           padding: '8px 0',
           boxShadow: '0 8px 32px rgba(43,44,73,0.12)',
         }}>
-          {links.map(({ key, label }) => (
-            <button key={key} onClick={() => setPage(key)} style={{
+          {links.map(({ href, label }) => (
+            <Link key={href} href={href} style={{
               display: 'block', width: '100%', textAlign: 'left',
-              padding: '11px 20px', background: 'none', border: 'none',
-              cursor: 'pointer', fontSize: 15,
-              fontWeight: page === key ? 500 : 400,
+              padding: '11px 20px',
+              fontSize: 15,
+              fontWeight: isActive(href) ? 500 : 400,
               color: '#2b2c49', fontFamily: '"DM Sans", sans-serif',
+              textDecoration: 'none',
             }}>
               {label}
-            </button>
+            </Link>
           ))}
         </div>
       )}
@@ -144,7 +157,7 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
 
 // ─── Footer ────────────────────────────────────────────────────────────────────
 
-export function Footer({ setPage }: { setPage: (p: Page) => void }) {
+export function Footer() {
   const mobile = useIsMobile()
   return (
     <footer style={{
@@ -156,11 +169,11 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
       flexWrap: 'wrap', gap: 20,
       borderTop: '1px solid rgba(197,197,255,0.06)',
     }}>
-      <button onClick={() => setPage('home')} style={{
+      <Link href="/" style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'none', border: 'none', cursor: 'pointer',
         fontWeight: 500, fontSize: 17, letterSpacing: '-0.03em',
         color: '#FCFCFF', fontFamily: '"DM Sans", sans-serif',
+        textDecoration: 'none',
       }}>
         <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
           <rect width="36" height="36" rx="9" fill="#2b2c49"/>
@@ -169,7 +182,7 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
           <path d="M11 21 Q14 17 18 21 Q22 25 25 21" stroke="#7f83e8" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
         </svg>
         immi
-      </button>
+      </Link>
       <ul style={{
         display: 'flex', flexDirection: mobile ? 'column' : 'row',
         gap: mobile ? 10 : 24, flexWrap: 'wrap',
@@ -219,7 +232,7 @@ export function StoreBtn({ store, light = false }: { store: 'ios' | 'android'; l
       color: '#FCFCFF', textDecoration: 'none',
       fontFamily: '"DM Sans", sans-serif',
       transition: 'all .2s',
-      maxWidth: "150px",
+      maxWidth: '150px',
     }}>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="white">{icon}</svg>
       <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>

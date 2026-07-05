@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { useIsMobile } from '@/components/PostCard/Shared'
-import type { Page } from '@/components/PostCard/Shared'
+
 import CardView from '@/app/cards/[id]/CardView'
 import type { PostcardRow } from '@/lib/supabase'
 import { supabase } from '@/lib/supabase'
@@ -27,7 +27,7 @@ const STAMPS = [
   { url: '/images/Work Stamp.png',          label: 'work' },
 ]
 
-const TITLE_MAX = 40
+const TITLE_MAX = 30
 
 type Step = 'template' | 'write' | 'share'
 
@@ -37,7 +37,7 @@ const STEP_COPY: Record<Step, { title: string; subtitle: string }> = {
   share:    { title: 'Your Postcard is Ready', subtitle: "save this link — it won't be sent to you again." },
 }
 
-export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => void }) {
+export default function PostcardBuilder({ setPage }: { setPage?: (p: string) => void }) {
   const mobile = useIsMobile()
   const [step, setStep] = useState<Step>('template')
 
@@ -49,6 +49,8 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
 
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const stampScrollRef = useRef<HTMLDivElement>(null)
+  const dragState = useRef({ down: false, startX: 0, startScroll: 0, moved: false, pendingDx: 0, rafId: 0 })
 
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState<string | null>(null)
@@ -57,6 +59,72 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
 
   const STEPS: Step[] = ['template', 'write', 'share']
   const stepIndex = STEPS.indexOf(step)
+
+  // Desktop has no touch-swipe, so a bare overflow-x:auto row is stuck
+  // unless someone knows to hold shift while scrolling. These make it
+  // behave like a normal horizontal carousel for mouse/trackpad users.
+  function handleStampWheel(e: React.WheelEvent<HTMLDivElement>) {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.currentTarget.scrollLeft += e.deltaY
+    }
+  }
+
+  function handleStampPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    const el = stampScrollRef.current
+    if (!el) return
+
+    dragState.current = {
+      down: true, startX: e.clientX, startScroll: el.scrollLeft,
+      moved: false, pendingDx: 0, rafId: 0,
+    }
+    // Scroll-snap fights a manual scrollLeft drag — the browser keeps
+    // pulling toward the nearest snap point mid-drag, which is what read
+    // as "teleporting." Snapping should only kick in once you let go.
+    el.style.scrollSnapType = 'none'
+
+    // Deliberately NOT using setPointerCapture here: capturing the pointer
+    // to the container retargets the eventual click to the container
+    // itself instead of whichever stamp button is under the finger/cursor,
+    // so individual stamp buttons stop being selectable. Tracking the drag
+    // via window listeners instead leaves normal click targeting intact.
+    function onMove(ev: PointerEvent) {
+      const state = dragState.current
+      if (!state.down) return
+      const dx = ev.clientX - state.startX
+      if (Math.abs(dx) > 4) state.moved = true
+      state.pendingDx = dx
+      if (!state.rafId) {
+        state.rafId = requestAnimationFrame(() => {
+          el!.scrollLeft = state.startScroll - state.pendingDx
+          state.rafId = 0
+        })
+      }
+    }
+
+    function onUp() {
+      const state = dragState.current
+      if (state.rafId) {
+        cancelAnimationFrame(state.rafId)
+        state.rafId = 0
+      }
+      state.down = false
+      el!.style.scrollSnapType = 'x proximity'
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
+  // Suppress the stamp-select click if the pointer-down turned into a drag,
+  // so dragging the strip doesn't also fire a selection on release.
+  function handleStampClickCapture(e: React.MouseEvent) {
+    if (dragState.current.moved) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
 
   async function handleFileUpload(file: File) {
     if (file.size > 8 * 1024 * 1024) {
@@ -155,6 +223,24 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
           0%   { background-position: -200% 0; }
           100% { background-position:  200% 0; }
         }
+        .immi-field::placeholder {
+          color: #6b6b78;
+          opacity: 1;
+        }
+        .immi-scroll-x {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .immi-scroll-x::-webkit-scrollbar {
+          display: none;
+        }
+        .immi-scroll-x * {
+          -webkit-user-drag: none;
+        }
       `}</style>
 
       <div style={{
@@ -171,10 +257,10 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
       }}>
 
         <h3 style={{ ...labelHeading, marginBottom: 4 }}>{copy.title}</h3>
-        <p style={{ ...helperText, marginBottom: 20 }}>{copy.subtitle}</p>
+        <p style={{ ...helperText, marginBottom: 32, lineHeight: .3 }}>{copy.subtitle}</p>
 
         <div style={{
-          background:   '#FAFBFF',
+          background:   '#F5F5FC',
           borderRadius: 16,
           padding:      mobile ? '28px 24px' : '32px 36px',
           maxWidth:     430,
@@ -217,15 +303,16 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
 
                 <div style={{
                   position: 'absolute', bottom: 10, right: 10,
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'rgba(15,15,20,0.55)',
+                  width: 48, height: 48, borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   backdropFilter: 'blur(4px)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.1)',
                 }}>
                   {uploading ? (
                     <span style={{ fontSize: 10, color: '#FCFCFF' }}>...</span>
                   ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FCFCFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FCFCFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                       <polyline points="17 8 12 3 7 8"/>
                       <line x1="12" y1="3" x2="12" y2="15"/>
@@ -233,6 +320,7 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
                   )}
                 </div>
               </button>
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -254,6 +342,9 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
                   <button
                     key={t.id}
                     onClick={() => setImageUrl(t.url)}
+                    title={t.label}
+                    aria-label={`Use ${t.label} template`}
+                    aria-pressed={imageUrl === t.url}
                     style={{
                       position: 'relative',
                       border: imageUrl === t.url ? '2px solid #7f83e8' : '2px solid transparent',
@@ -272,12 +363,12 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
               {error && <p style={errorText}>{error}</p>}
 
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setPage?.('home')} style={iconBackBtn} aria-label="Back to home">
+                {/* <button onClick={() => setPage?.('home')} style={iconBackBtn} aria-label="Back to home">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12" />
                     <polyline points="12 19 5 12 12 5" />
                   </svg>
-                </button>
+                </button> */}
                 <button onClick={() => setStep('write')} disabled={uploading} style={{ ...primaryBtn, flex: 1 }}>
                   {uploading ? 'Uploading...' : 'Continue'}
                 </button>
@@ -290,18 +381,20 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
           {/* STEP 2 — Write message + pick stamp */}
           {step === 'write' && (
             <div>
-              <label style={fieldLabel}>Message (required)</label>
+              <label style={fieldLabel}>Message <span style={requiredTag}>(required)</span></label>
               <textarea
+                className="immi-field"
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Was thinking about you today..."
-                maxLength={1000}
                 rows={5}
                 style={textareaStyle}
               />
+              <p style={charCount}>{message.length}/∞</p>
 
-              <label style={fieldLabel}>Title (required)</label>
+              <label style={fieldLabel}>Title <span style={requiredTag}>(required)</span></label>
               <input
+                className="immi-field"
                 value={recipientName}
                 onChange={e => setRecipientName(e.target.value.slice(0, TITLE_MAX))}
                 placeholder="Give your card a title"
@@ -310,8 +403,9 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
               />
               <p style={charCount}>{recipientName.length}/{TITLE_MAX}</p>
 
-              <label style={fieldLabel}>Your name (required)</label>
+              <label style={fieldLabel}>Your name <span style={requiredTag}>(required)</span></label>
               <input
+                className="immi-field"
                 value={senderName}
                 onChange={e => setSenderName(e.target.value)}
                 placeholder="Your name"
@@ -319,23 +413,80 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: Page) => vo
               />
 
               <label style={fieldLabel}>Stamp</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                  position: 'relative', overflow: 'hidden',
-                  border: '1px solid rgba(43,44,73,0.1)',
-                }}>
-                  <Image src={stampUrl} alt="" fill style={{ objectFit: 'cover' }} />
-                </div>
-                <select
-                  value={stampUrl}
-                  onChange={e => setStampUrl(e.target.value)}
-                  style={{ ...inputStyle, borderRadius: 8, marginBottom: 0, flex: 1, cursor: 'pointer' }}
+              <div style={{
+                position: 'relative',
+                marginBottom: 4,
+              }}>
+                <div
+                  ref={stampScrollRef}
+                  className="immi-scroll-x"
+                  onWheel={handleStampWheel}
+                  onPointerDown={handleStampPointerDown}
+                  onClickCapture={handleStampClickCapture}
+                  style={{
+                    display: 'flex',
+                    gap: 12,
+                    overflowX: 'auto',
+                    paddingBottom: 6,
+                    paddingRight: 16,
+                    scrollSnapType: 'x proximity',
+                    cursor: 'grab',
+                    touchAction: 'pan-x',
+                  }}
                 >
-                  {STAMPS.map(s => (
-                    <option key={s.url} value={s.url}>{s.label}</option>
-                  ))}
-                </select>
+                  {STAMPS.map(s => {
+                    const selected = stampUrl === s.url
+                    return (
+                      <button
+                        key={s.url}
+                        onClick={() => setStampUrl(s.url)}
+                        title={s.label}
+                        aria-label={`Use ${s.label} stamp`}
+                        aria-pressed={selected}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 4,
+                          flexShrink: 0,
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                          width: 52,
+                          scrollSnapAlign: 'start',
+                          paddingTop: 4,
+                        }}
+                      >
+                        <div style={{
+                          width: 44, height: 44, borderRadius: '50%',
+                          position: 'relative', overflow: 'hidden',
+                          boxShadow: selected
+                            ? '0 0 0 2px #7f83e8, 0 2px 6px rgba(43,44,73,0.15)'
+                            : '0 0 0 1px rgba(43,44,73,0.1)',
+                          transition: 'box-shadow 0.15s',
+                        }}>
+                          <Image src={s.url} alt={s.label} fill style={{ objectFit: 'cover' }} draggable={false} />
+                        </div>
+                        <span style={{
+                          fontSize: 11,
+                          color: selected ? '#7f83e8' : '#6F6F76',
+                          fontWeight: selected ? 700 : 400,
+                          fontFamily: '"DM Sans", sans-serif',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {s.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                {/* Fade hints there's more to scroll, without a visible track/scrollbar */}
+                <div style={{
+                  position: 'absolute', top: 0, right: 0, bottom: 6, width: 28,
+                  background: 'linear-gradient(to right, transparent, #F5F5FC)',
+                  pointerEvents: 'none',
+                }} />
               </div>
               <p style={{ marginBottom: 20 }} />
 
@@ -406,8 +557,13 @@ const charCount: React.CSSProperties = {
 
 const fieldLabel: React.CSSProperties = {
   display: 'block',
-  fontWeight: 700, fontSize: 14, color: '#0f0f14',
+  fontWeight: 700, fontSize: 14, color: '#0f0f14bd',
   marginBottom: 6, marginTop: 14,
+  fontFamily: '"DM Sans", sans-serif',
+}
+
+const requiredTag: React.CSSProperties = {
+  fontWeight: 400, fontSize: 11, opacity: 0.45,
   fontFamily: '"DM Sans", sans-serif',
 }
 
@@ -415,8 +571,8 @@ const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '13px 16px',
   borderRadius: 14,
-  border: 'none',
-  background: '#EDEEF8',
+  border: '.5px solid #E0E0FF',
+  background: '#FAFBFF',
   fontSize: 15,
   fontFamily: '"DM Sans", sans-serif',
   color: '#2b2c49',
@@ -437,10 +593,10 @@ const primaryBtn: React.CSSProperties = {
   background: '#7f83e8',
   color: '#fff',
   border: 'none',
-  borderRadius: 100,
-  padding: '15px 0',
-  fontSize: 16,
-  fontWeight: 700,
+  borderRadius: 8,
+  padding: '12px 0',
+  fontSize: 14,
+  fontWeight: 500,
   cursor: 'pointer',
   fontFamily: '"DM Sans", sans-serif',
 }

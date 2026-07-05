@@ -1,18 +1,17 @@
 'use client'
 
 import { useIsMobile, Footer } from '@/components/PostCard/Shared'
-import type { Page } from '@/components/PostCard/Shared'
 
 // ─── Page: About ───────────────────────────────────────────────────────────────
 
-export default function PageAbout({ setPage }: { setPage: (p: Page) => void }) {
+export default function PageAbout() {
   const mobile = useIsMobile()
 
   const team = [
     { initial: 'J', gradient: 'linear-gradient(135deg, #7f83e8, #2b2c49)', name: 'Jonathan Cohen', role: 'Founder',   bio: "Fitness nut, travel enthusiast, techie. Wrote the initial plan for immi at 2 AM in a hotel." },
     { initial: 'A', gradient: 'linear-gradient(135deg, #5ce8b5, #7f83e8)', name: 'Amadou Sow',    role: 'Growth',    bio: "Petrolhead, foodie, retired D3 runner. Has family in 4 countries over 3 different continents." },
     { initial: 'S', gradient: 'linear-gradient(135deg, #c5c5ff, #7f83e8)', name: 'Surya Mani',    role: 'Developer', bio: "The less said, the better." },
-    { initial: 'Z', gradient: 'linear-gradient(45deg, #c4c6fc, #7f83e8)', name: 'Zac Salas',     role: 'Design',    bio: "We'll add something here when Zac eventually figures out who he is." },
+    { initial: 'Z', gradient: 'linear-gradient(45deg, #c4c6fc, #7f83e8)',  name: 'Zac Salas',     role: 'Design',    bio: "We'll add something here when Zac eventually figures out who he is." },
   ]
 
   return (
@@ -97,7 +96,7 @@ export default function PageAbout({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </section>
 
-      <Footer setPage={setPage}/>
+      <Footer />
     </div>
   )
 }

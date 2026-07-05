@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useIsMobile, Footer, StoreBtn } from '@/components/PostCard/Shared'
-import type { Page } from '@/components/PostCard/Shared'
 import cardstyles from '@/components/PostCard/PostCard/postcard.module.css'
 
 // Card data — each card pairs its postcard image with its pre-blurred bg
@@ -88,7 +88,7 @@ function HeroCardStack() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIdx((prev) => (prev + 1) % HERO_CARDS.length)
-    }, 4500) // Increased slightly to let transitions breathe
+    }, 2500) // Increased slightly to let transitions breathe
     return () => clearInterval(interval)
   }, [])
 
@@ -222,7 +222,7 @@ function HeroCardStack() {
     </div>
   )
 }
-export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
+export default function PageHome() {
   const mobile = useIsMobile()
   const [stacked, setStacked] = useState(false)
   useEffect(() => {
@@ -290,12 +290,10 @@ export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
                 <StoreBtn store="ios" />
                 <StoreBtn store="android" />
               </div>
-            <button
-                onClick={() => setPage('app')}
+            <Link
+                href="/create"
                 style={{
-                    
                     marginTop: 18,
-                    background: 'none', border: 'none', cursor: 'pointer',
                     fontSize: 13, color: '#7f83e8',
                     fontFamily: '"DM Sans", sans-serif',
                     fontWeight: 500, padding: 0,
@@ -307,7 +305,7 @@ export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
                 }}
                 >
                 or make a free postcard →
-            </button>
+            </Link>
             </div>
           </div>
 
@@ -364,11 +362,10 @@ export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
                 <StoreBtn store="ios" />
                 <StoreBtn store="android" />
               </div>
-            <button
-                onClick={() => setPage('create')}
+            <Link
+                href="/create"
                 style={{
                     marginTop: 18,
-                    background: 'none', border: 'none', cursor: 'pointer',
                     fontSize: 13, color: '#7f83e8',
                     fontFamily: '"DM Sans", sans-serif',
                     fontWeight: 500, padding: 0,
@@ -380,7 +377,7 @@ export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
                 }}
                 >
                 or make a free postcard →
-            </button>
+            </Link>
             </div>
             </div>
           </div>
@@ -456,7 +453,7 @@ export default function PageHome({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </section>
 
-      <Footer setPage={setPage} />
+      <Footer />
     </div>
   )
 }
