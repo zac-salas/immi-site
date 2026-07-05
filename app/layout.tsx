@@ -3,6 +3,7 @@ import { Caveat, Geist, Geist_Mono } from "next/font/google";
 import { EB_Garamond } from "next/font/google";
 import { DM_Sans } from "next/font/google"; 
 import localFont from 'next/font/local'
+import { Nav } from '@/components/PostCard/Shared'
 import "./globals.css";
 
 
@@ -53,7 +54,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${caveatScript.variable} ${dmSans.variable} ${ebGaramond.variable} ${appleFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }
