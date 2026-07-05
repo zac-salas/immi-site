@@ -16,6 +16,20 @@ import { useIsMobile } from '@/components/PostCard/Shared'
 const SP_FLIP   = { type: 'spring' as const, damping: 22, stiffness: 380, mass: 0.35 }
 const SP_RETURN = { type: 'spring' as const, damping: 18, stiffness: 120, mass: 0.8 }
 
+// TODO: replace these with immi's actual store listings.
+const APP_STORE_URL  = 'https://apps.apple.com/us/app/immi/id6748417209'
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.suryamoney.immiapp'
+const WEB_URL         = 'https://immi.community/create'
+
+function getCreateLink() {
+  if (typeof navigator === 'undefined') return WEB_URL
+  const ua = navigator.userAgent || ''
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream
+  if (isIOS) return APP_STORE_URL
+  if (/android/i.test(ua)) return PLAY_STORE_URL
+  return WEB_URL
+}
+
 const DEFAULT_PALETTE = [
   'hsl(235, 65%, 55%)',
   'hsl(240, 65%, 88%)',
@@ -84,6 +98,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
 
   const [isFlipped, setIsFlipped] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [createLink, setCreateLink] = useState(WEB_URL)
   const [stampRot]  = useState(() => Math.random() * 8 - 4)
   const [cardSize, setCardSize] = useState({ w: 320, h: 460 })
   const [palette, setPalette] = useState<string[]>(DEFAULT_PALETTE)
@@ -165,7 +180,10 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
     idleTimer.current = setTimeout(resetToCenter, 1000)
   }
 
-  useEffect(() => { setIsMounted(true) }, [])
+  useEffect(() => {
+    setIsMounted(true)
+    setCreateLink(getCreateLink())
+  }, [])
 
   useEffect(() => {
     return () => { if (idleTimer.current) clearTimeout(idleTimer.current) }
@@ -485,7 +503,9 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 0 0' }}>
               <a
-                href="https://immi.community/create"
+                href={createLink}
+                target={createLink === WEB_URL ? undefined : '_blank'}
+                rel={createLink === WEB_URL ? undefined : 'noopener noreferrer'}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   background: '#585bbb21', color: '#13131B', border: 'none',
@@ -547,7 +567,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             style={{
-              position: 'fixed', top: '30%', transform: 'translate(-50%, -50%)',
+              position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
               zIndex: 60, width: 'min(90vw, 380px)',
               background: '#FAFBFF', borderRadius: 16, padding: '16px 18px',
               boxShadow: '0 12px 40px rgba(43,44,73,0.18), 0 2px 8px rgba(43,44,73,0.08)',
