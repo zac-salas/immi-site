@@ -57,7 +57,7 @@ function ExpiredCard() {
         href="https://immi.community/create"
         style={{
           background:    '#7f83e8',
-          color:         '#0f0f14',
+          color:         '#ffffff',
           padding:       '12px 28px',
           borderRadius:  100,
           textDecoration: 'none',
@@ -66,7 +66,7 @@ function ExpiredCard() {
           fontSize:      14,
         }}
       >
-        Send your own postcard →
+        Keep these postcards forever — get the immi app
       </a>
     </div>
   )

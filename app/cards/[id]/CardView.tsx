@@ -486,8 +486,8 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
                   <span style={{ fontFamily: '"Caveat", cursive', color: '#414149', fontSize: 18, lineHeight: 1.2 }}>{card.sender_name}</span>
                 </div>
               </div>
-              <div style={{ width: 52, height: 60, borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
-                <Image src={card.stamp_url} alt="stamp" width={52} height={60} style={{ objectFit: 'cover', width: '100%', height: '100%' }} draggable={false} />
+              <div style={{ width: 52, height: 52, borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
+                <Image src={card.stamp_url} alt="stamp" width={52} height={52} style={{ objectFit: 'cover', width: '100%', height: '100%' }} draggable={false} />
               </div>
             </div>
 
@@ -567,7 +567,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             style={{
-              position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+              position: 'fixed', top: '50%', transform: 'translate(-50%, -50%)',
               zIndex: 60, width: 'min(90vw, 380px)',
               background: '#FAFBFF', borderRadius: 16, padding: '16px 18px',
               boxShadow: '0 12px 40px rgba(43,44,73,0.18), 0 2px 8px rgba(43,44,73,0.08)',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useIsMobile } from '@/components/PostCard/Shared'
 
@@ -27,7 +27,7 @@ const STAMPS = [
   { url: '/images/Work Stamp.png',          label: 'work' },
 ]
 
-const TITLE_MAX = 30
+const TITLE_MAX = 40
 
 type Step = 'template' | 'write' | 'share'
 
@@ -199,19 +199,33 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: string) => 
 
   const copy = STEP_COPY[step]
 
+  // Clicking "create" in the nav while already on /create is a same-route
+  // Link click, so Next.js won't navigate or remount this component — the
+  // nav dispatches this event instead so the builder can reset itself.
+  useEffect(() => {
+    function handleReset(e: Event) {
+      const detail = (e as CustomEvent).detail
+      if (detail === '/create') resetBuilder()
+    }
+    window.addEventListener('immi:same-route-click', handleReset)
+    return () => window.removeEventListener('immi:same-route-click', handleReset)
+  }, [])
+
+  function resetBuilder() {
+    setStep('template')
+    setMessage('')
+    setSenderName('')
+    setRecipientName('')
+    setShareUrl(null)
+    setCreatedCard(null)
+  }
+
   if (step === 'share' && createdCard && shareUrl) {
     return (
       <CardView
         card={createdCard}
         shareUrl={shareUrl}
-        onMakeAnother={() => {
-          setStep('template')
-          setMessage('')
-          setSenderName('')
-          setRecipientName('')
-          setShareUrl(null)
-          setCreatedCard(null)
-        }}
+        onMakeAnother={resetBuilder}
       />
     )
   }
@@ -455,7 +469,6 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: string) => 
                           cursor: 'pointer',
                           width: 52,
                           scrollSnapAlign: 'start',
-                          paddingTop: 4,
                         }}
                       >
                         <div style={{
