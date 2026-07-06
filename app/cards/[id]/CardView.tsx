@@ -374,8 +374,24 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
           mouseX.set(0)
           mouseY.set(0)
         }}
-        onDragEnd={() => {
+        onDragEnd={(_event, info) => {
           setTimeout(() => { isDragging.current = false }, 50)
+
+          // Carry the release velocity forward and let it bounce off the
+          // viewport edges instead of just stopping where you let go —
+          // dragMomentum is off above specifically so this custom inertia
+          // (with real bounds) drives the post-release motion instead.
+          const { minX, maxX, minY, maxY } = getBounds()
+          const INERTIA = {
+            power: 0.4,
+            timeConstant: 300,
+            bounceStiffness: 420,
+            bounceDamping: 14,
+            restDelta: 0.5,
+          }
+          animate(x, x.get(), { type: 'inertia', velocity: info.velocity.x, min: minX, max: maxX, ...INERTIA })
+          animate(y, y.get(), { type: 'inertia', velocity: info.velocity.y, min: minY, max: maxY, ...INERTIA })
+
           scheduleReset()
         }}
         whileDrag={{ cursor: 'grabbing' }}
@@ -567,7 +583,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             style={{
-              position: 'fixed', top: '50%',
+              position: 'fixed', top: '50%', left: '50%',
               zIndex: 60, width: 'min(90vw, 380px)',
               background: '#FAFBFF', borderRadius: 16, padding: '16px 18px',
               boxShadow: '0 12px 40px rgba(43,44,73,0.18), 0 2px 8px rgba(43,44,73,0.08)',
