@@ -289,7 +289,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
     handleOrientationRef.current = (e: DeviceOrientationEvent) => {
       if (isDragging.current) return
       const beta  = e.beta  ?? 90  // front-back tilt; ~45deg is a natural "reading" angle
-      const gamma = e.gamma ?? 45  // left-right tilt, -90 to 90
+      const gamma = e.gamma ?? 0  // left-right tilt, -90 to 90
       const nx = clamp(gamma / 45, -1, 1)
       const ny = clamp((beta - 45) / 45, -1, 1)
       mouseX.set(nx * 12)
@@ -384,7 +384,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
         <button
           onClick={requestTiltPermission}
           style={{
-            position: 'absolute', bottom: 'calc(76px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', bottom: 'calc(48px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)',
             zIndex: 50, display: 'flex', alignItems: 'center', gap: 6,
             padding: '8px 14px', background: 'rgba(127,131,232,0.12)',
             border: '1px solid rgba(127,131,232,0.3)', borderRadius: 100,
