@@ -83,6 +83,54 @@ function withOpacity(hslCss: string, alpha: number) {
   return hslCss.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`)
 }
 
+// Safari's theme-color needs a solid, opaque color — the fully saturated
+// palette hue itself would look wrong against the gradient's actual pale
+// edges, so this blends it toward white at roughly the same low strength
+// the gradient blobs use, giving a close approximation of what's actually
+// visible near the top/bottom of the screen rather than the raw hue.
+function mixWithWhite(hslCss: string, strength = 0.14): string {
+  const match = hslCss.match(/hsl\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%\)/)
+  if (!match) return '#ffffff'
+  const h = Number(match[1])
+  const s = Number(match[2]) / 100
+  const l = Number(match[3]) / 100
+
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const xVal = c * (1 - Math.abs(((h / 60) % 2) - 1))
+  const m = l - c / 2
+  let r = 0, g = 0, b = 0
+  if (h < 60)       { r = c; g = xVal; b = 0 }
+  else if (h < 120) { r = xVal; g = c; b = 0 }
+  else if (h < 180) { r = 0; g = c; b = xVal }
+  else if (h < 240) { r = 0; g = xVal; b = c }
+  else if (h < 300) { r = xVal; g = 0; b = c }
+  else              { r = c; g = 0; b = xVal }
+
+  r = (r + m) * 255
+  g = (g + m) * 255
+  b = (b + m) * 255
+
+  const mr = Math.round(r * strength + 255 * (1 - strength))
+  const mg = Math.round(g * strength + 255 * (1 - strength))
+  const mb = Math.round(b * strength + 255 * (1 - strength))
+  return `rgb(${mr}, ${mg}, ${mb})`
+}
+
+// Writes (or updates) the theme-color meta tag, which is what Safari uses
+// to tint its own chrome — the status bar behind the dynamic island and
+// the bottom toolbar. Without this they stay flat white/system-default
+// regardless of the page's own background, creating a hard seam.
+function setThemeColor(color: string) {
+  if (typeof document === 'undefined') return
+  let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.appendChild(meta)
+  }
+  meta.content = color
+}
+
 export default function CardView({ card, shareUrl, onMakeAnother }: { card: PostcardRow; shareUrl?: string; onMakeAnother?: () => void }) {
   const mobile = useIsMobile()
   const [showShareOverlay, setShowShareOverlay] = useState(!!shareUrl)
@@ -128,13 +176,20 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
     img.onload = () => {
       try {
         const colors = getPaletteSync(img, { colorCount: 3 })
-        if (colors) setPalette(colors.map(c => vibrantize(c.css())))
+        if (colors) {
+          const vibrant = colors.map(c => vibrantize(c.css()))
+          setPalette(vibrant)
+          setThemeColor(mixWithWhite(vibrant[0]))
+        }
       } catch {
         // Extraction can fail on decode issues or edge-case images —
         // keep whatever palette was already showing rather than break
         // the page.
       }
     }
+    // Restore the site's default theme-color if this view unmounts, so a
+    // client-side nav to another page isn't left tinted like this postcard.
+    return () => setThemeColor('#F5F5FC')
   }, [card.image_url])
 
   const CARD_W = cardSize.w
@@ -313,7 +368,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
       {/* Expiry badge — top, replaces the old static header */}
       <div style={{
 
-        position: 'absolute', top: 28, left: '50%', transform: 'translateX(-50%)',
+        position: 'absolute', top: 'calc(28px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)',
         zIndex: 50, textAlign: 'center', pointerEvents: 'none',
       }}>
         <Image src="/images/immi.svg" alt="immi" width={28} height={28} style={{ marginBottom: 8, paddingLeft: 48, paddingRight:48, opacity:0.5 }} />
@@ -329,7 +384,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
         <button
           onClick={requestTiltPermission}
           style={{
-            position: 'absolute', top: 72, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', bottom: 'calc(76px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)',
             zIndex: 50, display: 'flex', alignItems: 'center', gap: 6,
             padding: '8px 14px', background: 'rgba(127,131,232,0.12)',
             border: '1px solid rgba(127,131,232,0.3)', borderRadius: 100,
@@ -546,7 +601,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.0, duration: 0.8 }}
         style={{
-          position: 'absolute', bottom: 32, transform: 'translateX(-50%)',
+          position: 'absolute', bottom: 'calc(32px + env(safe-area-inset-bottom))', transform: 'translateX(-50%)',
           fontFamily: '"DM Sans", sans-serif', fontSize: 13,
           color: 'rgba(43,44,73,0.35)', fontStyle: 'italic',
           whiteSpace: 'nowrap', pointerEvents: 'none',
@@ -583,7 +638,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             style={{
-              position: 'fixed', top: '50%',  transform: 'translate(-50%, -50%)',
+              position: 'fixed', top: '50%', transform: 'translate(-50%, -50%)',
               zIndex: 60, width: 'min(90vw, 380px)',
               background: '#FAFBFF', borderRadius: 16, padding: '16px 18px',
               boxShadow: '0 12px 40px rgba(43,44,73,0.18), 0 2px 8px rgba(43,44,73,0.08)',

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Caveat, Geist, Geist_Mono } from "next/font/google";
 import { EB_Garamond } from "next/font/google";
 import { DM_Sans } from "next/font/google"; 
@@ -42,6 +42,18 @@ const appleFont = localFont({
 export const metadata: Metadata = {
   title: "immi",
   description: "immi is here.",
+};
+
+// viewportFit: 'cover' lets page content paint under the iPhone dynamic
+// island / notch and the bottom home-indicator area, rather than the
+// browser reserving that space with its own background color. Without
+// this, any full-bleed background (like CardView's gradient) hits a hard
+// edge at the safe-area boundary instead of extending to the true edges.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#F5F5FC",
 };
 
 export default function RootLayout({
