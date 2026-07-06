@@ -233,8 +233,8 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
   if (!handleOrientationRef.current) {
     handleOrientationRef.current = (e: DeviceOrientationEvent) => {
       if (isDragging.current) return
-      const beta  = e.beta  ?? 45  // front-back tilt; ~45deg is a natural "reading" angle
-      const gamma = e.gamma ?? 0   // left-right tilt, -90 to 90
+      const beta  = e.beta  ?? 90  // front-back tilt; ~45deg is a natural "reading" angle
+      const gamma = e.gamma ?? 45  // left-right tilt, -90 to 90
       const nx = clamp(gamma / 45, -1, 1)
       const ny = clamp((beta - 45) / 45, -1, 1)
       mouseX.set(nx * 12)
@@ -567,7 +567,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             style={{
-              position: 'fixed', top: '50%', transform: 'translate(-50%, -50%)',
+              position: 'fixed', top: '50%',
               zIndex: 60, width: 'min(90vw, 380px)',
               background: '#FAFBFF', borderRadius: 16, padding: '16px 18px',
               boxShadow: '0 12px 40px rgba(43,44,73,0.18), 0 2px 8px rgba(43,44,73,0.08)',

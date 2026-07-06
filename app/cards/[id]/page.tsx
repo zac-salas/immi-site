@@ -62,7 +62,7 @@ function ExpiredCard() {
           borderRadius:  100,
           textDecoration: 'none',
           fontFamily:    'Arial, sans-serif',
-          fontWeight:    600,
+          fontWeight:    500,
           fontSize:      14,
         }}
       >
