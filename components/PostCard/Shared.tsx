@@ -36,6 +36,16 @@ export function Nav() {
   // Close mobile menu on route change
   useEffect(() => { setMenuOpen(false) }, [pathname])
 
+  // Clicking a nav link for the page you're already on is a no-op for
+  // Next's router (no navigation, no remount), so any in-page state that
+  // needs to reset — like the postcard builder mid-flow — never finds out.
+  // This fires a same-route signal any listening page component can react to.
+  function handleNavClick(href: string) {
+    if (isActive(href)) {
+      window.dispatchEvent(new CustomEvent('immi:same-route-click', { detail: href }))
+    }
+  }
+
   const links = [
     { href: '/',       label: 'home' },
     { href: '/about',  label: 'about' },
@@ -49,10 +59,22 @@ export function Nav() {
     return pathname.startsWith(href)
   }
 
+  // A shared postcard isn't a page someone's browsing on the site — it's a
+  // private object made for them. Site chrome (logo, links, download CTA)
+  // floating over it is exactly the thing that breaks the "this is just a
+  // card" illusion CardView is built around, so it doesn't render here at all.
+  // A shared postcard isn't a page someone's browsing on the site — it's a
+  // private object made for them. Site chrome (logo, links, download CTA)
+  // floating over it is exactly the thing that breaks the "this is just a
+  // card" illusion CardView is built around. On mobile that illusion is the
+  // whole point, so the nav drops out entirely; on desktop it stays, since
+  // there it reads more as "this is part of a real product" than as noise.
+  if (mobile && pathname.startsWith('/cards/')) return null
+
   return (
     <>
       <nav style={{
-        position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+        position: 'fixed', top: 'calc(16px + min(env(safe-area-inset-top), 59px))', left: '50%', transform: 'translateX(-50%)',
         zIndex: 100,
         display: 'flex', alignItems: 'center', gap: mobile ? 166 : 28,
         padding: mobile ? '8px 16px' : '10px 20px',
@@ -78,7 +100,7 @@ export function Nav() {
 
         {/* Desktop links */}
         {!mobile && links.map(({ href, label }) => (
-          <Link key={href} href={href} style={{
+          <Link key={href} href={href} onClick={() => handleNavClick(href)} style={{
             fontSize: 13,
             fontWeight: isActive(href) ? 500 : 400,
             color: '#2b2c49',
@@ -128,7 +150,7 @@ export function Nav() {
       {/* Mobile dropdown menu */}
       {mobile && menuOpen && (
         <div style={{
-          position: 'fixed', top: 72, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', top: 'calc(72px + min(env(safe-area-inset-top), 59px))', left: '50%', transform: 'translateX(-50%)',
           zIndex: 99, width: 200,
           background: 'rgba(252,252,255,0.98)',
           backdropFilter: 'blur(12px)',
@@ -138,7 +160,7 @@ export function Nav() {
           boxShadow: '0 8px 32px rgba(43,44,73,0.12)',
         }}>
           {links.map(({ href, label }) => (
-            <Link key={href} href={href} style={{
+            <Link key={href} href={href} onClick={() => handleNavClick(href)} style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '11px 20px',
               fontSize: 15,
