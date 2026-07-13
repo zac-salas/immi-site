@@ -99,7 +99,7 @@ function HeroCardStack() {
   }, [])
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '105%', overflow: 'hidden' }}>
       
       {/* ── Background Crossfade (GPU-accelerated layers) ── */}
       {HERO_CARDS.map((card, idx) => {
