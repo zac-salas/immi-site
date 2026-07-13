@@ -27,7 +27,7 @@ const STAMPS = [
   { url: '/images/Work Stamp.png',          label: 'work' },
 ]
 
-const TITLE_MAX = 40
+const TITLE_MAX = 30
 
 type Step = 'template' | 'write' | 'share'
 
@@ -311,7 +311,7 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: string) => 
                     inset: 0,
                     background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%)',
                     backgroundSize: '200% 100%',
-                    animation: 'shimmer 1.2s ease-in-out infinite',
+                    animation: 'shimmer 2s ease-in-out infinite',
                   }} />
                 )}
 
@@ -469,6 +469,7 @@ export default function PostcardBuilder({ setPage }: { setPage?: (p: string) => 
                           cursor: 'pointer',
                           width: 52,
                           scrollSnapAlign: 'start',
+                          paddingTop: 4,
                         }}
                       >
                         <div style={{

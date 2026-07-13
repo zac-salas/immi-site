@@ -244,8 +244,8 @@ export default function PageHome() {
           <div style={{
             borderRadius: '0',
             overflow: 'hidden',
-            height: 'calc(100vw + 160px)',
-            
+            // height: 'calc(100vw + 160px)',
+            height: '100dvh',
             minHeight: 420,
             position: 'relative',
             // paddingTop: 190,

@@ -108,7 +108,8 @@
     padding-top: 16px;
     font-style: italic;
     font-size: 14px;
-    padding-bottom:64px
+    padding-bottom:64px;
+    /* padding-top: 48px; */
 }
 
 .arrow{

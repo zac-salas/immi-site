@@ -16,19 +16,10 @@ import { useIsMobile } from '@/components/PostCard/Shared'
 const SP_FLIP   = { type: 'spring' as const, damping: 22, stiffness: 380, mass: 0.35 }
 const SP_RETURN = { type: 'spring' as const, damping: 18, stiffness: 120, mass: 0.8 }
 
-// TODO: replace these with immi's actual store listings.
-const APP_STORE_URL  = 'https://apps.apple.com/us/app/immi/id6748417209'
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.suryamoney.immiapp'
-const WEB_URL         = 'https://immi.community/create'
-
-function getCreateLink() {
-  if (typeof navigator === 'undefined') return WEB_URL
-  const ua = navigator.userAgent || ''
-  const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream
-  if (isIOS) return APP_STORE_URL
-  if (/android/i.test(ua)) return PLAY_STORE_URL
-  return WEB_URL
-}
+// Postcards don't work in the native app yet, so this always points back
+// at the web create flow rather than routing to an app store listing that
+// can't actually deliver what the person just saw.
+const CREATE_URL = 'https://immi.community/create'
 
 const DEFAULT_PALETTE = [
   'hsl(235, 65%, 55%)',
@@ -146,7 +137,12 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
 
   const [isFlipped, setIsFlipped] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [createLink, setCreateLink] = useState(WEB_URL)
+  // Small random tilt applied only to the front-face stamp (never the
+  // back). The front is the candid side — a photo someone just took and
+  // slapped a stamp on, so it should feel a little imperfect and handled.
+  // The back is the "official" side — recipient name, sender, message —
+  // and a stamp sitting dead straight there reads as more deliberate and
+  // form-like. Same stamp image, two different postures, on purpose.
   const [stampRot]  = useState(() => Math.random() * 8 - 4)
   const [cardSize, setCardSize] = useState({ w: 320, h: 460 })
   const [palette, setPalette] = useState<string[]>(DEFAULT_PALETTE)
@@ -237,7 +233,6 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
 
   useEffect(() => {
     setIsMounted(true)
-    setCreateLink(getCreateLink())
   }, [])
 
   useEffect(() => {
@@ -368,7 +363,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
       {/* Expiry badge — top, replaces the old static header */}
       <div style={{
 
-        position: 'absolute', top: 'calc(28px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)',
+        position: 'absolute', top: 'calc(72px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)',
         zIndex: 50, textAlign: 'center', pointerEvents: 'none',
       }}>
         <Image src="/images/immi.svg" alt="immi" width={28} height={28} style={{ marginBottom: 8, paddingLeft: 48, paddingRight:48, opacity:0.5 }} />
@@ -384,7 +379,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
         <button
           onClick={requestTiltPermission}
           style={{
-            position: 'absolute', bottom: 'calc(48px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: 'calc(16px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)',
             zIndex: 50, display: 'flex', alignItems: 'center', gap: 6,
             padding: '8px 14px', background: 'rgba(127,131,232,0.12)',
             border: '1px solid rgba(127,131,232,0.3)', borderRadius: 100,
@@ -513,7 +508,9 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, paddingTop: 16, color: '#7E7F83', fontStyle: 'italic', fontSize: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, paddingTop: 48, color: '#7E7F83', fontStyle: 'italic', fontSize: 14 , opacity:.6, animation: 'fadeInOut, moveLeft300px, bounce',
+animationDuration:"2.5s, 5s" ,
+animationIterationCount:' 2, 1'}}>
               <span>tap to read</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -522,8 +519,13 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             </div>
           </motion.div>
 
-          {/* Back face */}
+          {/* Back face — tapping anywhere flips it back, mirroring how
+              tapping the front flips it forward. A real postcard doesn't
+              have a close button; you just turn it back over. Clicks on
+              the message text and the CTA link stop propagation below so
+              reading/scrolling and navigating don't also trigger a flip. */}
           <motion.div
+            onClick={handleTap}
             style={{
               position: 'absolute', inset: 0, borderRadius: 16, overflow: 'hidden',
               background: '#FAFBFF',
@@ -534,21 +536,13 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
               display: 'flex', flexDirection: 'column',
               pointerEvents: isFlipped ? 'auto' : 'none',
               padding: 16,
+              cursor: 'pointer',
             }}
           >
             <div style={{ position: 'absolute', inset: 0, borderRadius: 16, border: '1.5px dotted rgba(111,111,118,0.25)', pointerEvents: 'none' }} />
 
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-              <button
-                onClick={() => { setIsFlipped(false); scheduleReset() }}
-                style={{
-                  width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(19,19,27,0.04)', border: 'none', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, color: '#13131B', fontWeight: 500,
-                }}
-              >✕</button>
-              <div style={{ flex: 1, paddingTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, paddingLeft:8}}>
+              <div style={{ flex: 1 }}>
                 <p style={{ fontFamily: '"EB Garamond", Georgia, serif', fontSize: 20, fontWeight: 500, color: '#13131B', margin: '0 0 4px' }}>
                   {card.recipient_name ? ` ${card.recipient_name}` : 'A postcard for you'}
                 </p>
@@ -557,26 +551,41 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
                   <span style={{ fontFamily: '"Caveat", cursive', color: '#414149', fontSize: 18, lineHeight: 1.2 }}>{card.sender_name}</span>
                 </div>
               </div>
+              {/* Deliberately no stampRot here — see the comment where it's
+                  declared. The back is the "official" side, so the stamp
+                  sits straight instead of tilted like the front. */}
               <div style={{ width: 52, height: 52, borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
                 <Image src={card.stamp_url} alt="stamp" width={52} height={52} style={{ objectFit: 'cover', width: '100%', height: '100%' }} draggable={false} />
               </div>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 0 0', scrollbarWidth: 'none', touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
+            <div
+              // onClick={e => e.stopPropagation()}
+              style={{ flex: 1, overflowY: 'auto', padding: '16px 0 0', scrollbarWidth: 'none', touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+            >
               <p style={{
-                fontFamily: '"DM Sans", sans-serif', fontSize: 16, lineHeight: 1.5,
+                fontFamily: '"DM Sans", sans-serif', fontSize: 16, lineHeight: 1.6,
                 color: '#13131B', margin: 0, whiteSpace: 'pre-wrap',
-                userSelect: 'text', WebkitUserSelect: 'text',
-              }}>
+                userSelect: 'text', WebkitUserSelect: 'text', paddingLeft:8, textDecoration: "underline", textDecorationColor: "rgba(43, 44, 73, 0.05)", textDecorationThickness: 1, textUnderlineOffset: 6           }}>
                 {card.message}
               </p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 0 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0 0' }}>
+              <span style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                color: '#7E7F83', fontStyle: 'italic', fontSize: 12, opacity: 0.6,
+                fontFamily: '"DM Sans", sans-serif',
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+                tap to flip back
+              </span>
               <a
-                href={createLink}
-                target={createLink === WEB_URL ? undefined : '_blank'}
-                rel={createLink === WEB_URL ? undefined : 'noopener noreferrer'}
+                href={CREATE_URL}
+                onClick={e => e.stopPropagation()}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   background: '#585bbb21', color: '#13131B', border: 'none',
@@ -638,7 +647,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             style={{
-              position: 'fixed', top: '50%', transform: 'translate(-50%, -50%)',
+              position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
               zIndex: 60, width: 'min(90vw, 380px)',
               background: '#FAFBFF', borderRadius: 16, padding: '16px 18px',
               boxShadow: '0 12px 40px rgba(43,44,73,0.18), 0 2px 8px rgba(43,44,73,0.08)',

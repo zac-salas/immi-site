@@ -14,12 +14,7 @@
   --font-script: var(--font-script-caveat);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #F5F5FC;
-    --foreground: #F5F5FC;
-  }
-}
+
 
 body {
   background: var(--background);
