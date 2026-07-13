@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useIsMobile, Footer, StoreBtn } from '@/components/PostCard/Shared'
@@ -67,8 +67,12 @@ function HeroCardStack() {
   const [scale, setScale] = useState(1)
   const [activeIdx, setActiveIdx] = useState(0)
 
-  // Fluid responsive scale handling
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) is the actual fix for the initial-load
+  // stutter — useEffect runs after the browser's first paint, so there was
+  // a real one-frame flash of the stack at scale(1) (full size) before this
+  // corrected it. useLayoutEffect runs synchronously before paint, so the
+  // right scale is already applied by the time anything hits the screen.
+  useLayoutEffect(() => {
     const el = containerRef.current
     if (!el) return
     const update = () => {
