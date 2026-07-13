@@ -99,7 +99,7 @@ function HeroCardStack() {
   }, [])
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '105%', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '120%', overflow: 'hidden' }}>
       
       {/* ── Background Crossfade (GPU-accelerated layers) ── */}
       {HERO_CARDS.map((card, idx) => {
@@ -246,14 +246,14 @@ export default function PageHome() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       {stacked ? (
-        <section style={{ display: 'flex', flexDirection: 'column',  height: '100vh' }}>
+        <section style={{ display: 'flex', flexDirection: 'column',  height: '102vh' }}>
 
           {/* Photo panel full width on mobile, leads the page */}
           <div style={{
             borderRadius: '0',
             overflow: 'hidden',
             // height: 'calc(100vw + 160px)',
-            height: '100dvh',
+            height: '105dvh',
             minHeight: 420,
             position: 'relative',
             // paddingTop: 190,
