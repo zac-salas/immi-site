@@ -6,72 +6,22 @@ import Link from 'next/link'
 import { useIsMobile, Footer, StoreBtn } from '@/components/PostCard/Shared'
 import cardstyles from '@/components/PostCard/PostCard/postcard.module.css'
 
-// Card data — each card pairs its postcard image with its pre-blurred bg
-
+// Card data 
 const HERO_CARDS = [
-  {
-    imageUrl: '/images/cafecard.png',
-    bgUrl:    '/images/cafeblur.png',
-    title:    'Timeless Conversations',
-    sender:   'An old friend',
-    stampUrl: '/images/Casual Stamp.png',
-    stampRot: -3,
-  },
-  {
-    imageUrl: '/images/freakcard.png',
-    bgUrl:    '/images/freakblur.png',
-    title:    'Check Out Le Freak',
-    sender:   'That One Guy',
-    stampUrl: '/images/Entertainment Stamp.png',
-    stampRot: 4,
-  },
-  {
-    imageUrl: '/images/doodlecard.png',
-    bgUrl:    '/images/doodleblur.png',
-    title:    'Doodle For The Day',
-    sender:   'Your artsy friend',
-    stampUrl: '/images/Art Stamp.png',
-    stampRot: -2,
-  },
-  {
-    imageUrl: '/images/yunquecard.png',
-    bgUrl:    '/images/yunqueblur.png',
-    title:    'Love my remote work view',
-    sender:   'Your Friend on a Tuesday',
-    stampUrl: '/images/Nature Stamp.png',
-    stampRot: -1,
-  },
-  {
-    imageUrl: '/images/phantomcard.png',
-    bgUrl:    '/images/phantomblur.png',
-    title:    'Gotta See the Phantom',
-    sender:   'Your Music Snob Friend',
-    stampUrl: '/images/Entertainment Stamp.png',
-    stampRot: 2,
-  },
-  {
-    imageUrl: '/images/bbqcard.png',
-    bgUrl:    '/images/bbqblur.png',
-    title:    'Mooooooooooooo',
-    sender:   'Your Neighbor',
-    stampUrl: '/images/Food Stamp.png',
-    stampRot: -3,
-  },
+  { imageUrl: '/images/cafecard.png', bgUrl: '/images/cafeblur.png', title: 'Timeless Conversations', sender: 'An old friend', stampUrl: '/images/Casual Stamp.png', stampRot: -3 },
+  { imageUrl: '/images/freakcard.png', bgUrl: '/images/freakblur.png', title: 'Check Out Le Freak', sender: 'That One Guy', stampUrl: '/images/Entertainment Stamp.png', stampRot: 4 },
+  { imageUrl: '/images/doodlecard.png', bgUrl: '/images/doodleblur.png', title: 'Doodle For The Day', sender: 'Your artsy friend', stampUrl: '/images/Art Stamp.png', stampRot: -2 },
+  { imageUrl: '/images/yunquecard.png', bgUrl: '/images/yunqueblur.png', title: 'Love my remote work view', sender: 'Your Friend on a Tuesday', stampUrl: '/images/Nature Stamp.png', stampRot: -1 },
+  { imageUrl: '/images/phantomcard.png', bgUrl: '/images/phantomblur.png', title: 'Gotta See the Phantom', sender: 'Your Music Snob Friend', stampUrl: '/images/Entertainment Stamp.png', stampRot: 2 },
+  { imageUrl: '/images/bbqcard.png', bgUrl: '/images/bbqblur.png', title: 'Mooooooooooooo', sender: 'Your Neighbor', stampUrl: '/images/Food Stamp.png', stampRot: -3 },
 ]
-
-
-// HeroCardStack
 
 function HeroCardStack() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
   const [activeIdx, setActiveIdx] = useState(0)
+  const mobile = useIsMobile()
 
-  // useLayoutEffect (not useEffect) is the actual fix for the initial-load
-  // stutter — useEffect runs after the browser's first paint, so there was
-  // a real one-frame flash of the stack at scale(1) (full size) before this
-  // corrected it. useLayoutEffect runs synchronously before paint, so the
-  // right scale is already applied by the time anything hits the screen.
   useLayoutEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -88,17 +38,15 @@ function HeroCardStack() {
     return () => ro.disconnect()
   }, [])
 
-  // Clean, single-source loop with no nested state timers
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIdx((prev) => (prev + 1) % HERO_CARDS.length)
-    }, 2500) // Increased slightly to let transitions breathe
+    }, 2500)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      
       {/* ── Background Crossfade (GPU-accelerated layers) ── */}
       {HERO_CARDS.map((card, idx) => {
         const isActive = idx === activeIdx
@@ -117,7 +65,7 @@ function HeroCardStack() {
               objectPosition: '30% center',
               opacity: isActive ? 0.45 : 0,
               filter: 'saturate(0.65) brightness(0.85)',
-              transition: 'opacity 1200ms cubic-bezier(0.25, 1, 0.5, 1)', // Sweeping, buttery crossfade
+              transition: 'opacity 1200ms cubic-bezier(0.25, 1, 0.5, 1)',
               willChange: 'opacity',
               zIndex: isActive ? 1 : 0,
             }}
@@ -140,7 +88,6 @@ function HeroCardStack() {
           transformOrigin: 'center center',
           transition: 'transform 300ms ease-out',
         }}>
-
           {/* Static Background Aesthetic Cards */}
           <div style={{
             position: 'absolute', inset: 0,
@@ -158,9 +105,7 @@ function HeroCardStack() {
           {/* Card Rendering Stack */}
           {HERO_CARDS.map((card, idx) => {
             const isActive = idx === activeIdx
-            // Target the card directly preceding the current active index to track the swipe exit
             const isOutgoing = idx === (activeIdx === 0 ? HERO_CARDS.length - 1 : activeIdx - 1)
-            const isIncoming = !isActive && !isOutgoing
 
             return (
               <div
@@ -169,21 +114,15 @@ function HeroCardStack() {
                 style={{
                   position: isActive ? 'relative' : 'absolute',
                   top: 0, left: 0,
-                  
-                  // Motion State Profile
                   transform: isActive 
                     ? 'rotate(-1deg) translateY(0px)' 
                     : isOutgoing 
-                    ? 'rotate(-3deg) translatex(-110px) scale(0.96)' // Fluid flying exit
-                    : 'rotate(-1deg) translateY(20px) scale(0.95)',  // Subtle waiting entrance from below
-                  
+                    ? 'rotate(-3deg) translatex(-110px) scale(0.96)' 
+                    : 'rotate(-1deg) translateY(20px) scale(0.95)',
                   opacity: isActive ? 1 : 0,
-                  
-                  // Unique timing splits for exit vs entry behavior
                   transition: isActive
                     ? 'transform 850ms cubic-bezier(0.16, 1, 0.3, 1), opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)'
                     : 'transform 700ms cubic-bezier(0.3, 0, 0, 1), opacity 550ms ease-in',
-                  
                   boxShadow: isActive ? '0 24px 64px rgba(0,0,0,0.22)' : '0 8px 24px rgba(0,0,0,0.15)',
                   pointerEvents: isActive ? 'auto' : 'none',
                   zIndex: isActive ? 3 : isOutgoing ? 2 : 1,
@@ -220,15 +159,16 @@ function HeroCardStack() {
               </div>
             )
           })}
-
         </div>
       </div>
     </div>
   )
 }
+
 export default function PageHome() {
   const mobile = useIsMobile()
   const [stacked, setStacked] = useState(false)
+
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1150px)')
     setStacked(mq.matches)
@@ -238,123 +178,123 @@ export default function PageHome() {
   }, [])
 
   return (
-    <div style={{  backgroundImage: "url(/images/bgTexture.svg)", paddingTop: mobile ? 0 : 0}}>
+    <div style={{ backgroundImage: "url(/images/bgTexture.svg)" }}>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       {stacked ? (
-        <section style={{ display: 'flex', flexDirection: 'column',  height: '100vh' }}>
+        // Shift main wrapper container to dynamic layout bounds
+        <section style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
 
-          {/* Photo panel full width on mobile, leads the page */}
+          {/* Photo panel takes up proportional dynamic space with safe padding injection */}
           <div style={{
             borderRadius: '0',
             overflow: 'hidden',
-            // height: 'calc(100vw + 160px)',
-            height: '100dvh',
-            minHeight: 420,
+            height: '52dvh', 
+            minHeight: 360,
             position: 'relative',
-            // paddingTop: 190,
-            boxSizing: 'content-box',
+            boxSizing: 'border-box',
+            paddingTop: 'calc(12px + env(safe-area-inset-top))', // Clears the Dynamic Island flawlessly
           }}>
             <HeroCardStack />
 
-            {/* Softens the seam between the status-bar-adjacent strip and
-                the vibrant hero photo below. Can't do anything about the
-                Dynamic Island shape itself — that's OS-rendered and always
-                opaque black regardless of page content — but the area
-                around it is ours, and a hard flat-to-vibrant cutoff there
-                reads as broken where a gradient reads as intentional. */}
+            {/* Linear blend to match native bar edges */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0,
-              height: 'calc(140px + env(safe-area-inset-top))',
-              background: 'linear-gradient(to bottom, rgba(245,245,252,0.9), rgba(245,245,252,0) 100%)',
+              height: 'calc(80px + env(safe-area-inset-top))',
+              background: 'linear-gradient(to bottom, rgba(245,245,252,0.95), rgba(245,245,252,0) 100%)',
               pointerEvents: 'none',
               zIndex: 5,
             }} />
           </div>
 
-          {/* Copy beneath */}
-          <div style={{ padding: '36px 24px 48px' }}>
+          {/* Copy section layout padding adjustments */}
+          <div style={{ 
+            padding: '24px 24px calc(24px + env(safe-area-inset-bottom))', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center',
+            flexGrow: 1 
+          }}>
             <h1 style={{
               fontFamily: '"DM Sans", sans-serif',
               fontWeight: 500,
-              fontSize: 34,
-              lineHeight: 1.08,
+              fontSize: 32,
+              lineHeight: 1.1,
               letterSpacing: '-0.03em',
               color: '#2b2c49',
-              marginBottom: 16,
+              marginBottom: 12,
             }}>
               <span style={{ whiteSpace: 'nowrap' }}>
-                <span style={{}}>More </span>
+                <span>More </span>
                 <img 
                   src="/images/connecting.svg" 
                   alt="connecting"
                   style={{ 
-                    height: 'clamp(42px, 3.8vw, 56px)',
+                    height: '38px',
                     width: 'auto',
                     verticalAlign: 'middle',
                     display: 'inline-block',
                   }} 
-                /> </span>
-                <br />
+                /> 
+              </span>
+              <br />
               <span style={{ color: '#2b2c49' }}>less </span>noise
             </h1>
 
-            <p style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 400, fontSize: 16, lineHeight: 1.65, color: '#6F6F76', marginBottom: 28 }}>
+            <p style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 400, fontSize: 15, lineHeight: 1.5, color: '#6F6F76', marginBottom: 24 }}>
               Stop keeping tabs. Start keeping touch.
             </p>
 
-            <div style={{ display: 'inline-block', gap: 10 }}>
+            <div style={{ display: 'inline-block' }}>
               <div style={{ display: 'flex', gap: 12 }}>
                 <StoreBtn store="ios" />
                 <StoreBtn store="android" />
               </div>
-            <Link
+              <Link
                 href="/create"
                 style={{
-                    marginTop: 18,
-                    fontSize: 13, color: '#7f83e8',
-                    fontFamily: '"DM Sans", sans-serif',
-                    fontWeight: 500, padding: 0,
-                    textDecoration: 'underline',
-                    textDecorationColor: 'rgba(127,131,232,0.3)',
-                    textUnderlineOffset: 3,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    letterSpacing: '-0.01em',
+                  marginTop: 16,
+                  fontSize: 13, color: '#7f83e8',
+                  fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: 500, padding: 0,
+                  textDecoration: 'underline',
+                  textDecorationColor: 'rgba(127,131,232,0.3)',
+                  textUnderlineOffset: 3,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  letterSpacing: '-0.01em',
                 }}
-                >
+              >
                 or make a free postcard →
-            </Link>
+              </Link>
             </div>
           </div>
 
         </section>
       ) : (
-        <div style={{ maxWidth: 1600, margin: '0 auto', width: '100%',  height: '100vh', paddingTop: 'min(5vh, 160px)', }}>
-        <section style={{
-          minHeight: 'calc(100vh - 80px)',
-          maxHeight: 900,
-          padding: '40px 60px',
-          display: 'grid',
-          gridTemplateColumns: 'minmax(auto, 480px) 1fr',
-          gap: 72,
-          alignItems: 'center',
-          boxSizing: 'border-box',
-         
-        }}>
-
-          {/* LEFT — copy */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-            <div style={{  }}>
-              <h1 style={{
-                fontFamily: '"DM Sans", sans-serif',
-                fontWeight: 500,
-                fontSize: 'clamp(36px, 3.2vw, 48px)',
-                lineHeight: 1.08,
-                letterSpacing: '-0.03em',
-                color: '#2b2c49',
-                marginBottom: 0,
-              }}>
-                <span style={{ }}>More </span>
+        <div style={{ maxWidth: 1600, margin: '0 auto', width: '100%', height: '100vh', paddingTop: 'min(5vh, 160px)' }}>
+          <section style={{
+            minHeight: 'calc(100vh - 80px)',
+            maxHeight: 900,
+            padding: '40px 60px',
+            display: 'grid',
+            gridTemplateColumns: 'minmax(auto, 480px) 1fr',
+            gap: 72,
+            alignItems: 'center',
+            boxSizing: 'border-box',
+          }}>
+            {/* LEFT — copy */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <div>
+                <h1 style={{
+                  fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 'clamp(36px, 3.2vw, 48px)',
+                  lineHeight: 1.08,
+                  letterSpacing: '-0.03em',
+                  color: '#2b2c49',
+                  marginBottom: 0,
+                }}>
+                  <span>More </span>
                   <img 
                     src="/images/connecting.svg" 
                     alt="connecting"
@@ -368,52 +308,50 @@ export default function PageHome() {
                     }} 
                   />
                   <br />
-                <span style={{ color: '#2b2c49' }}>less </span>noise
-              </h1>
-              <hr style={{ borderColor: '#e0e0e0', margin: '4px 0px 8px 0px' }}></hr>
-              <p style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 400, fontSize: 16, lineHeight: 1.65, color: '#6F6F76', marginBottom: 32 }}>
-                Stop keeping tabs. Start keeping touch.
-              </p>
+                  <span style={{ color: '#2b2c49' }}>less </span>noise
+                </h1>
+                <hr style={{ borderColor: '#e0e0e0', margin: '4px 0px 8px 0px' }} />
+                <p style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 400, fontSize: 16, lineHeight: 1.65, color: '#6F6F76', marginBottom: 32 }}>
+                  Stop keeping tabs. Start keeping touch.
+                </p>
 
-              <div style={{ display: 'inline-block', gap: 10 }}>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <StoreBtn store="ios" />
-                <StoreBtn store="android" />
+                <div style={{ display: 'inline-block' }}>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <StoreBtn store="ios" />
+                    <StoreBtn store="android" />
+                  </div>
+                  <Link
+                    href="/create"
+                    style={{
+                      marginTop: 18,
+                      fontSize: 13, color: '#7f83e8',
+                      fontFamily: '"DM Sans", sans-serif',
+                      fontWeight: 500, padding: 0,
+                      textDecoration: 'underline',
+                      textDecorationColor: 'rgba(127,131,232,0.3)',
+                      textUnderlineOffset: 3,
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    or make a free postcard →
+                  </Link>
+                </div>
               </div>
-            <Link
-                href="/create"
-                style={{
-                    marginTop: 18,
-                    fontSize: 13, color: '#7f83e8',
-                    fontFamily: '"DM Sans", sans-serif',
-                    fontWeight: 500, padding: 0,
-                    textDecoration: 'underline',
-                    textDecorationColor: 'rgba(127,131,232,0.3)',
-                    textUnderlineOffset: 3,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    letterSpacing: '-0.01em',
-                }}
-                >
-                or make a free postcard →
-            </Link>
             </div>
+
+            {/* RIGHT — photo panel */}
+            <div style={{
+              borderRadius: 24,
+              overflow: 'hidden',
+              height: '70vh',
+              maxHeight: 680,
+              minHeight: 400,
+              position: 'relative',
+            }}>
+              <HeroCardStack />
             </div>
-          </div>
-
-          {/* RIGHT — photo panel */}
-          <div style={{
-            borderRadius: 24,
-            overflow: 'hidden',
-            height: '70vh',
-            maxHeight: 680,
-            minHeight: 400,
-            position: 'relative',
-            
-          }}>
-            <HeroCardStack />
-          </div>
-
-        </section>
+          </section>
         </div>
       )}
 
@@ -441,8 +379,8 @@ export default function PageHome() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {[
               { title: 'Connection over consumption', body: 'Every design choice is made to facilitate authentic interactions, not passive consumption.' },
-              { title: 'No growth hacks',             body: "We don't use FOMO or algorithms to keep you scrolling. We want you to spend less time on the app." },
-              { title: 'Privacy is everything',       body: "A private network by design. We don't ask for more than we need and we never sell your data." },
+              { title: 'No growth hacks', body: "We don't use FOMO or algorithms to keep you scrolling. We want you to spend less time on the app." },
+              { title: 'Privacy is everything', body: "A private network by design. We don't ask for more than we need and we never sell your data." },
             ].map(({ title, body }) => (
               <div key={title} style={{ borderLeft: '2px solid rgba(127,131,232,0.4)', paddingLeft: 20 }}>
                 <h3 style={{ fontWeight: 500, fontSize: 15, letterSpacing: '-0.02em', color: '#FCFCFF', marginBottom: 6 }}>{title}</h3>
