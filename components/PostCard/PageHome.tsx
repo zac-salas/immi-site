@@ -256,6 +256,20 @@ export default function PageHome() {
             boxSizing: 'content-box',
           }}>
             <HeroCardStack />
+
+            {/* Softens the seam between the status-bar-adjacent strip and
+                the vibrant hero photo below. Can't do anything about the
+                Dynamic Island shape itself — that's OS-rendered and always
+                opaque black regardless of page content — but the area
+                around it is ours, and a hard flat-to-vibrant cutoff there
+                reads as broken where a gradient reads as intentional. */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: 'calc(140px + env(safe-area-inset-top))',
+              background: 'linear-gradient(to bottom, rgba(245,245,252,0.9), rgba(245,245,252,0) 100%)',
+              pointerEvents: 'none',
+              zIndex: 5,
+            }} />
           </div>
 
           {/* Copy beneath */}
