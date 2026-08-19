@@ -571,18 +571,7 @@ animationIterationCount:' 2, 1'}}>
               </p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0 0' }}>
-              <span style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                color: '#7E7F83', fontStyle: 'italic', fontSize: 12, opacity: 0.6,
-                fontFamily: '"DM Sans", sans-serif',
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-                tap to flip back
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '12px 0 0' }}>
               <a
                 href={CREATE_URL}
                 onClick={e => e.stopPropagation()}
@@ -603,6 +592,46 @@ animationIterationCount:' 2, 1'}}>
           </motion.div>
         </motion.div>
       </motion.div>
+
+      {/* Floating close button — sits below the card, outside its clipped
+          border-radius, sliding up into view when the card is flipped to
+          its back face. Tapping anywhere on the back face still flips it
+          back too (via handleTap), so this is a redundant-but-easier-to-
+          reach affordance, not the only close path. */}
+      <motion.button
+        onClick={handleTap}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{
+          opacity: isFlipped ? 1 : 0,
+          y: isFlipped ? 0 : 20,
+        }}
+        transition={SP_FLIP}
+        style={{
+          position: 'absolute',
+          top: `calc(50% + ${CARD_H / 2 + 20}px)`,
+          
+          transform: 'translateX(-50%)',
+          zIndex: 20,
+          width: 44,
+          height: 44,
+          borderRadius: '50%',
+          background: '#ffffff',
+          border: '0.5px solid rgba(187,188,235,0.6)',
+          boxShadow: '0 2px 8px rgba(19,19,27,0.12)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 16,
+          color: '#13131B',
+          fontWeight: 500,
+          pointerEvents: isFlipped ? 'auto' : 'none',
+          fontFamily: '"DM Sans", sans-serif',
+        }}
+        aria-label="Flip back"
+      >
+        ✕
+      </motion.button>
 
       {/* Hint text */}
       <motion.p

@@ -99,7 +99,7 @@ function HeroCardStack() {
   }, [])
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '120%', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '110%', overflow: 'hidden' }}>
       
       {/* ── Background Crossfade (GPU-accelerated layers) ── */}
       {HERO_CARDS.map((card, idx) => {
@@ -122,7 +122,7 @@ function HeroCardStack() {
               transition: 'opacity 1200ms cubic-bezier(0.25, 1, 0.5, 1)', // Sweeping, buttery crossfade
               willChange: 'opacity',
               zIndex: isActive ? 1 : 0,
-              paddingTop: mobile ? 'calc(20px + env(safe-area-inset-top))' : 0,
+              // paddingTop: mobile ? 'calc(20px + env(safe-area-inset-top))' : 0,
               
             }}
           />
@@ -137,6 +137,7 @@ function HeroCardStack() {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 2,
+        paddingBottom: "15%",
       }}>
         <div style={{ 
           position: 'relative', 
@@ -246,14 +247,14 @@ export default function PageHome() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       {stacked ? (
-        <section style={{ display: 'flex', flexDirection: 'column',  height: '102vh' }}>
+        <section style={{ display: 'flex', flexDirection: 'column',  height: '100vh' }}>
 
           {/* Photo panel full width on mobile, leads the page */}
           <div style={{
             borderRadius: '0',
             overflow: 'hidden',
             // height: 'calc(100vw + 160px)',
-            height: '105dvh',
+            height: '100dvh',
             minHeight: 420,
             position: 'relative',
             // paddingTop: 190,
