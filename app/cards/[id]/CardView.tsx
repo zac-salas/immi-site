@@ -250,6 +250,7 @@ export default function CardView({ card, shareUrl, onMakeAnother }: { card: Post
   }, [isMounted]) // eslint-disable-line
 
   useEffect(() => {
+    if (!isMounted || mobile) return 
     function handleMouseMove(e: MouseEvent) {
       if (isDragging.current) return
       const cardEl = cardRef.current
