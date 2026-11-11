@@ -120,7 +120,6 @@ function HeroCardStack() {
               opacity: isActive ? 0.45 : 0,
               filter: 'saturate(0.65) brightness(0.85)',
               transition: 'opacity 1200ms cubic-bezier(0.25, 1, 0.5, 1)', // Sweeping, buttery crossfade
-              willChange: 'opacity',
               zIndex: isActive ? 1 : 0,
               // paddingTop: mobile ? 'calc(20px + env(safe-area-inset-top))' : 0,
               
@@ -192,7 +191,6 @@ function HeroCardStack() {
                   boxShadow: isActive ? '0 24px 64px rgba(0,0,0,0.22)' : '0 8px 24px rgba(0,0,0,0.15)',
                   pointerEvents: isActive ? 'auto' : 'none',
                   zIndex: isActive ? 3 : isOutgoing ? 2 : 1,
-                  willChange: 'transform, opacity',
                 }}
               >
                 <div className={cardstyles.cardTop}>
@@ -243,7 +241,7 @@ export default function PageHome() {
   }, [])
 
   return (
-    <div style={{  backgroundImage: "url(/images/bgTexture.svg)", paddingTop: mobile ? 0 : 0}}>
+    <div style={{  backgroundImage: "url(/images/bgTexture.webp)", backgroundSize: '1964px 1073px', paddingTop: mobile ? 0 : 0}}>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       {stacked ? (
